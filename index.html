@@ -410,7 +410,7 @@
     config = {
       title: rawConfig["イベント名"] || "タイムテーブル",
       subtitle: rawConfig["サブタイトル(無しでも可)"] || "",
-      date: (rawConfig["開催日"] || "").replace(/\D/g, ""), // 数字のみ抽出 (2026/05/04 -> 20260504)
+      date: (rawConfig["開催日(YYYYMMDD)"] || rawConfig["開催日"] || "").replace(/\D/g, ""), // 数字のみ抽出 (2026/05/04 -> 20260504)
       startHour: parseInt((rawConfig["開始時間"] || "10:00").split(":")[0], 10),
       endHour: parseInt((rawConfig["終了時間"] || "21:00").split(":")[0], 10),
       // ★修正箇所：スプレッドシートの新しい列名にも対応
