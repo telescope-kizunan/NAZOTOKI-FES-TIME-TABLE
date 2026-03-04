@@ -311,10 +311,16 @@
       </div>
     </div>
     
-    <div class="mt-4 text-center">
-	<button id="download-btn" onclick="shareScheduleImage()" class="w-full bg-white text-[#123b53] py-4 rounded-xl font-[900] text-sm shadow-xl active:scale-95 transition-all border border-[#123b53]/10 uppercase tracking-widest flex justify-center items-center">
- 	 📱 画像をシェアする
-	</button>
+	<div class="flex flex-col gap-3 mt-4">
+	  <button id="share-btn" onclick="shareScheduleImage()" class="w-full bg-[#123b53] text-white py-3.5 rounded-xl font-[900] text-sm shadow-xl active:scale-95 transition-all flex justify-center items-center flex-col leading-tight">
+	    <span>📱 SNSでシェアする</span>
+	    <span class="text-[10px] font-normal opacity-80 mt-1">※スマホ専用</span>
+	  </button>
+
+	  <button id="download-btn" onclick="downloadScheduleImage()" class="w-full bg-white text-[#123b53] py-3 rounded-xl font-[900] text-sm shadow-sm active:scale-95 transition-all border-2 border-[#123b53]/10 flex justify-center items-center">
+	    📸 画像を保存する
+	  </button>
+	</div>
     </div>
   </div>
 </div>
@@ -687,50 +693,66 @@
     document.getElementById('my-schedule-modal').classList.add('hidden'); 
   } 
 
-	// --- 画像生成＆ネイティブシェア処理 ---
-  async function shareScheduleImage() { 
+	// --- ① 画像保存処理（PC・スマホ共通） ---
+  async function downloadScheduleImage() { 
     const btn = document.getElementById('download-btn'); 
     const area = document.getElementById('capture-area'); 
-    const originalText = btn.innerText; 
+    const originalText = btn.innerHTML; 
     
-    btn.innerText = "シェア準備中..."; 
+    btn.innerText = "画像生成中..."; 
     btn.disabled = true; 
 
     try {
-      // html-to-image で画像を Blob（データのかたまり）として生成
+      const dataUrl = await htmlToImage.toPng(area, { 
+        quality: 1.0,
+        pixelRatio: 3, 
+        style: { overflow: 'visible', borderRadius: '2.5rem' }
+      });
+      const link = document.createElement('a');
+      link.download = `my-hashigo-pass-${config.date}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('画像生成エラー:', error);
+      alert("保存に失敗しました。");
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // --- ② SNS投稿処理（スマホ専用） ---
+  async function shareScheduleImage() { 
+    const btn = document.getElementById('share-btn'); 
+    const area = document.getElementById('capture-area'); 
+    const originalText = btn.innerHTML; 
+    
+    btn.innerText = "準備中..."; 
+    btn.disabled = true; 
+
+    try {
       const blob = await htmlToImage.toBlob(area, { 
         quality: 1.0,
-        pixelRatio: 3, // 高画質化
-        style: {
-          overflow: 'visible',
-          borderRadius: '2.5rem'
-        }
+        pixelRatio: 3,
+        style: { overflow: 'visible', borderRadius: '2.5rem' }
       });
 
       const file = new File([blob], `hashigo-pass-${config.date}.png`, { type: 'image/png' });
 
-      // スマホのネイティブシェア機能（Web Share API）が使えるか判定
+      // スマホ（Web Share API対応環境）かチェック
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        // Xなどのアプリへ画像とテキストを直接引き渡す
         await navigator.share({
           files: [file],
-          text: '名古屋 謎の縁のマイハシゴテーブルを作成したよ！\n当日ご一緒する皆さん、よろしくお願いします！\n#名古屋謎の縁 #謎の縁ハシゴ\n'
+          text: '名古屋 謎の縁のマイハシゴテーブルを作成したよ！\n当日ご一緒する皆さん、よろしくお願いします！\n#名古屋謎の縁 #謎の縁ハシゴ\nhttps://telescope-kizunan.github.io/-/'
         });
       } else {
-        // PC等、直接シェア非対応ブラウザのフォールバック（画像保存）
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = file.name;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
-        alert("お使いの環境は直接シェア機能に未対応のため、画像をダウンロードしました。X(Twitter)等を開いて画像を添付しポストしてください！");
+        // PCなどでボタンを押してしまった場合の案内
+        alert("お使いのPCブラウザは直接シェア機能に未対応です。下の「画像を保存する」ボタンからダウンロードし、手動で添付してください！");
       }
     } catch (error) {
       console.error('シェア処理エラー:', error);
-      alert("画像の生成またはシェアに失敗しました。何度も失敗する場合はスクリーンショットをご利用ください。");
     } finally {
-      btn.innerText = originalText; 
+      btn.innerHTML = originalText; 
       btn.disabled = false; 
     }
   }
