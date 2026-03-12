@@ -396,7 +396,6 @@
 
 
 
-
 <script>
     // ▼▼▼ 注意：API URL はご自身がGASで「新しいデプロイ」をした際の発行URLに書き換えてください ▼▼▼
     const API_URL = 'https://script.google.com/macros/s/AKfycbwlnWMqXi5wIN-G649TPz3QgPDvGFD_xxP-7sYbc1F-3Q5hSXVBThfpu1Ag_zFVUKzD/exec';
@@ -584,33 +583,32 @@
             </div>`;
         }
 
-        // ★修正（仕様案B）
-        // テキストエリアの幅を w-[70px]（約5文字分＋α）に固定し、whitespace-pre-wrap でスプレッドシートの改行をそのまま反映
+        // ★完全修正版：美しい縦並び（flex-col）構造に戻しつつ、タイトル部のみ140px制限をかける
         let colHtml = `
         <div class="venue-col border-r border-slate-100" style="height:${columnHeight}px" data-reservation="${reservationType}">
-          <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex border-b border-slate-200 shadow-sm overflow-hidden text-left items-start"> 
+          <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left"> 
             
-            <div class="info-area w-[70px] flex-none flex flex-col h-full mr-2">
-                <div class="flex-1 min-w-0">
-                  <div class="text-[8px] font-black ${c.text} opacity-80 bg-white border ${c.border} px-1.5 py-0.5 rounded inline-block mb-1.5 tracking-widest leading-none break-words whitespace-pre-wrap">${circle}</div>
-                  <h3 class="font-[900] text-[13px] leading-[1.3] text-[#123b53] break-words whitespace-pre-wrap">${title}</h3>
-                </div>
-                
-                <div class="space-y-0.5 text-[9.5px] uppercase tracking-wider mb-2 font-black flex-none">
-                  <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>定員:</span> <span class="text-[#123b53] font-black">${capacity}</span></div>
-                  <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${duration}分</span></div>
-                  ${priceHtml}
-                </div>
-                
-                <div class="mt-auto mb-1.5 reserve-btn-area">
-                  ${buttonHtml}
-                </div>
+            <div class="flex gap-2 items-start mb-2">
+              <div class="w-[140px] flex-none">
+                <div class="text-[8px] font-black ${c.text} opacity-80 bg-white border ${c.border} px-1.5 py-0.5 rounded inline-block mb-1.5 tracking-widest leading-none break-words whitespace-pre-wrap">${circle}</div>
+                <h3 class="font-[900] text-[13px] leading-[1.3] text-[#123b53] break-words whitespace-pre-wrap">${title}</h3>
+              </div>
+              ${imageUrl
+                ? `<img src="${imageUrl}" class="program-visual" alt="visual">`
+                : `<div class="program-visual flex items-center justify-center text-[10px] text-slate-300 font-bold italic text-center leading-tight w-20">No Visual</div>`
+              }
             </div>
-
-            ${imageUrl
-              ? `<img src="${imageUrl}" class="program-visual" alt="visual">`
-              : `<div class="program-visual flex items-center justify-center text-[10px] text-slate-300 font-bold italic text-center leading-tight w-20">No Visual</div>`
-            }
+            
+            <div class="space-y-0.5 text-[9.5px] uppercase tracking-wider mb-2 font-black flex-none">
+              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>定員:</span> <span class="text-[#123b53] font-black">${capacity}</span></div>
+              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${duration}分</span></div>
+              ${priceHtml}
+            </div>
+            
+            <div class="mt-auto mb-1.5 reserve-btn-area">
+              ${buttonHtml}
+            </div>
+            
           </div>`;
 
         shows.filter(s => s["公演名"] === title).forEach(show => {
@@ -647,7 +645,6 @@
             cardStyle += ` background-color: rgba(239, 68, 68, ${heatAlpha}) !important; border-color: rgba(185, 28, 28, ${heatAlpha}) !important;`;
           }
           
-          // ★修正：left-2 right-2 を使用することで、画像の幅に合わせて列が広くなった分だけカードも連動して綺麗に広がります
           colHtml += `
           <div onclick="toggleShow('${showId}', event)" id="card-${showId}" 
                style="${cardStyle}" 
