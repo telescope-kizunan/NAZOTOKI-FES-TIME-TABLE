@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Serif+JP:wght@900&display=swap"
+    rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* 1. タイトルの特別装飾（Noto Serif JP） */
+    .fancy-title {
+      font-family: 'Noto Serif JP', serif !important;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: -0.02em;
+      filter: drop-shadow(0 2px 4px rgba(18, 59, 83, 0.15));
+    }
+
+    /* 2. タイトルの可読性を高める「座布団」カード（プレミアム・グラスモーフィズム） */
+    .title-banner-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-top: 1px solid rgba(255, 255, 255, 1);
+      border-left: 1px solid rgba(255, 255, 255, 1);
+      box-shadow: 0 25px 50px -12px rgba(18, 59, 83, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+      border-radius: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-banner-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+    }
+
+    /* 3. カードデザイン：沈み込みアニメ付き */
+    .timetable-card {
+      border-radius: 4px;
+      border-width: 1px;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .timetable-card:active {
+      transform: scale(0.96);
+    }
+
+    /* 選択時のカード装飾 */
+    .selected-card {
+      transform: translateY(-4px) !important;
+      box-shadow: 0 15px 30px -5px rgba(18, 59, 83, 0.2);
+      border-color: #123b53 !important;
+      border-width: 2px !important;
+      z-index: 30 !important;
+    }
+
+    /* 0分移動禁止・被り警告アニメーション */
+    .conflict {
+      border-color: #c5304b !important;
+      background-color: #ffe4e6 !important;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(197, 48, 75, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(197, 48, 75, 0);
+      }
+    }
+
+    /* 4. 背景：和紙テクスチャ */
+    .main-bg {
+      background-color: #f1f5f9;
+      background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+    }
+
+    /* タイムテーブルの列（横幅 160px / 1時間 70px 設定） */
+    .venue-col {
+      min-width: 160px;
+      position: relative;
+      background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+      background-size: 100% 35px;
+      /* 30分間隔のガイド線（後でJSで動的に変更） */
+      background-position: 0 240px;
+      /* ヘッダーの位置 +10pxからガイド線開始 */
+      background-repeat: repeat-y;
+    }
+
+    /* 上部スクロールバーの装飾 */
+    #top-scrollbar-wrapper {
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 16px;
+    }
+
+    #top-scrollbar-content {
+      height: 16px;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ヘッダー背景画像 */
+    .header-image-box {
+      background-size: cover;
+      background-position: center;
+    }
+
+    .header-overlay {
+      background: linear-gradient(180deg, rgba(241, 245, 249, 0.3) 0%, rgba(241, 245, 249, 1) 100%);
+    }
+
+    #my-schedule-modal,
+    #howto-modal {
+      backdrop-filter: blur(12px);
+    }
+
+    .hashigo-card {
+      border-left: 6px solid #2563eb;
+    }
+
+    /* 公演ビジュアル：縦長(2:3) */
+    .program-visual {
+      width: 75px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 5. NOWラインの「縁」結び目装飾 */
+    #now-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #c5304b;
+      z-index: 40;
+      pointer-events: none;
+      border-top: 1px solid white;
+    }
+
+    #now-line::before {
+      content: '●';
+      position: absolute;
+      left: -10px;
+      top: -7px;
+      color: #c5304b;
+      font-size: 14px;
+      text-shadow: 0 0 10px white;
+    }
+
+    #now-line::after {
+      content: 'NOW';
+      position: absolute;
+      left: -42px;
+      top: -8px;
+      background: #c5304b;
+      color: white;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    /* ==========================================
+       PDF・画像作成モード用CSS（巨大な1枚画像用）
+    ========================================== */
+    .pdf-mode {
+      background-color: white !important;
+      overflow: visible !important;
+      width: max-content !important;
+      /* 横幅を限界まで広げる */
+    }
+
+    /* ヘッダーや不要なUI（使い方ガイド等）をすべて非表示 */
+    .pdf-mode #header-bg,
+    .pdf-mode .guide-area-wrapper,
+    .pdf-mode #status-area,
+    .pdf-mode #top-scrollbar-wrapper,
+    .pdf-mode .admin-ui,
+    .pdf-mode footer,
+    .pdf-mode #selection-bar,
+    .pdf-mode .reserve-btn-area {
+      display: none !important;
+    }
+
+    /* Tailwindの特殊文字 "[" "]" はエスケープしないとCSSが効かないので修正 */
+    .pdf-mode .max-w-\[1800px\] {
+      max-width: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* タイムテーブルコンテナの制限を全解除して中身のサイズに広げる */
+    .pdf-mode #table-container {
+      overflow: visible !important;
+      display: flex !important;
+      width: max-content !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
+    /* sticky（ヘッダーの追従）を解除して、印刷時に要素が消えたり重なったりするのを防ぐ */
+    .pdf-mode .sticky,
+    .pdf-mode .timetable-header {
+      position: relative !important;
+      top: 0 !important;
+
+      /* PDF生成の邪魔になるエフェクトを強制解除 */
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background-color: white !important;
+      height: 230px !important;
+      z-index: auto !important;
+    }
+
+    @media print {
+
+      /* A3などのサイズ制限をなくし、ブラウザに巨大な画像として認識させる */
+      @page {
+        size: auto;
+        margin: 0;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+
+<body id="body-tag" class="main-bg text-slate-900 antialiased leading-tight">
+
+  <div id="header-bg" class="header-image-box relative">
+    <header
+      class="header-overlay relative pt-16 pb-16 px-4 md:px-6 flex flex-col items-center text-center overflow-hidden">
+
+      <div
+        class="title-banner-card z-10 py-10 px-8 md:px-16 max-w-4xl w-full text-center transition-all hover:-translate-y-1 duration-500">
+
+        <!-- 装飾用の上部アクセント -->
+        <div class="flex justify-center items-center gap-3 mb-6">
+          <div class="h-[2px] w-12 bg-gradient-to-r from-transparent to-[#c9a044]"></div>
+          <div
+            class="px-4 py-1.5 text-[8px] sm:text-[10px] font-black tracking-[0.4em] text-white bg-[#123b53] rounded-full uppercase shadow-md border border-[#123b53]/20">
+            RIDDLE SOLVING FESTIVAL
+          </div>
+          <div class="h-[2px] w-12 bg-gradient-to-l from-transparent to-[#c9a044]"></div>
+        </div>
+
+        <h1 id="fes-title"
+          class="fancy-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#123b53] mb-6 drop-shadow-sm leading-tight">
+          読み込み中...</h1>
+
+        <div class="flex justify-center items-center gap-4 relative z-10">
+          <p id="fes-subtitle"
+            class="text-slate-500 font-bold text-[10px] md:text-sm tracking-[0.2em] uppercase bg-white/60 px-4 py-1.5 rounded-full border border-white shadow-sm">
+            データ取得中</p>
+        </div>
+
+        <!-- 装飾用の背景ロゴ透かし -->
+        <div
+          class="absolute -right-6 -bottom-10 text-[150px] opacity-[0.03] font-black pointer-events-none text-[#123b53] mix-blend-overlay"
+          style="font-family: serif;">謎</div>
+      </div>
+
+    </header>
+  </div>
+
+  <div class="relative max-w-[1800px] mx-auto px-6 pb-40">
+
+    <div class="relative guide-area-wrapper mb-0">
+      <div class="flex justify-start">
+        <button onclick="document.getElementById('howto-modal').classList.remove('hidden')"
+          class="bg-[#123b53] hover:bg-[#0a2230] text-white text-[11px] font-[900] px-5 py-2.5 rounded-full shadow-xl transition-all flex items-center gap-2 uppercase tracking-widest active:scale-95 border-2 border-white">
+          <span
+            class="bg-[#c9a044] text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black italic">?</span>
+          使い方ガイド
+        </button>
+      </div>
+    </div>
+
+    <div id="status-area" class="text-center py-2">
+      <p id="loading-msg" class="text-slate-400 font-medium animate-pulse text-xs uppercase tracking-widest">Deciphering
+        riddles...</p>
+      <div id="error-msg"
+        class="hidden max-w-xl mx-auto bg-rose-50 border border-rose-100 p-6 rounded-3xl text-[#c5304b] font-bold text-sm">
+      </div>
+    </div>
+
+    <div id="top-scrollbar-wrapper" class="mb-2 hidden">
+      <div id="top-scrollbar-content"></div>
+    </div>
+
+    <div id="table-container"
+      class="hidden flex overflow-x-auto bg-white rounded-3xl shadow-xl border border-slate-200 overflow-y-hidden relative text-center">
+      <div id="now-line" class="hidden"></div>
+      <div id="time-axis-col" class="w-20 flex-none bg-slate-50/50 border-r border-slate-200 pt-[230px]">
+        <div id="time-axis" class="text-[11px] font-black text-slate-300"></div>
+      </div>
+      <div id="timetable-grid" class="flex flex-1"></div>
+    </div>
+
+    <div class="flex justify-end mt-4 px-2 admin-ui gap-4">
+      <button onclick="togglePdfMode()"
+        class="text-[#123b53]/60 hover:text-[#123b53] text-[10px] font-black uppercase border border-[#123b53]/10 bg-white/50 px-3 py-1.5 rounded-md transition-all">
+        📄 PDF・画像作成モード
+      </button>
+    </div>
+
+    <footer class="mt-40 mb-10 text-center border-t border-slate-200/60 pt-10 text-slate-400">
+      <p class="text-[10px] font-black tracking-[0.3em] uppercase mb-2">Developed by</p>
+      <p class="text-sm font-[900] italic text-[#123b53] tracking-tighter uppercase">テレスコープ@謎の縁実行委員会</p>
+    </footer>
+
+    <div id="selection-bar"
+      class="fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[95%] md:w-[90%] max-w-5xl bg-[#123b53]/95 backdrop-blur-2xl text-white p-6 md:p-8 rounded-[2rem] shadow-2xl transform translate-y-64 transition-all duration-700 z-50 border border-white/10 text-sm">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+        <div class="flex-1 w-full text-left">
+          <div id="conflict-warning"
+            class="hidden text-[#ff6b8b] text-[11px] font-black mb-2 animate-pulse uppercase tracking-tight">
+            ⚠️ このチョイスだと時間が被っててハシゴ出来ないよ！
+          </div>
+          <div id="selected-items"
+            class="flex gap-2 md:gap-3 overflow-x-auto pb-1 no-scrollbar justify-center md:justify-start"></div>
+        </div>
+        <div class="flex items-center gap-4 md:gap-6">
+          <button onclick="clearSelection()"
+            class="text-slate-400 text-[11px] font-black uppercase tracking-widest hover:text-white transition-colors">Reset</button>
+          <button onclick="showHashigoTable()"
+            class="bg-white text-[#123b53] hover:bg-[#f9f7f1] px-6 md:px-10 py-3 md:py-4 rounded-2xl font-[900] text-xs md:text-sm shadow-xl transition-all active:scale-95 uppercase whitespace-nowrap tracking-tight">
+            ハシゴテーブルを表示
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="howto-modal"
+    class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-[#123b53]/60 backdrop-blur-md">
+    <div
+      class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative border border-white/20 text-center">
+      <button onclick="this.closest('#howto-modal').classList.add('hidden')"
+        class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 text-2xl w-8 h-8 flex items-center justify-center">&times;</button>
+      <h2 class="font-black text-xl mb-8 italic tracking-tighter text-[#123b53] uppercase">How to Use</h2>
+
+      <div class="space-y-6 text-left text-sm text-slate-600 border-t pt-8">
+        <div class="font-bold flex gap-4 items-start"><span
+            class="bg-[#123b53] text-white w-6 h-6 rounded-full flex-none font-black text-xs flex items-center justify-center shadow-lg">1</span>
+          <p>気になる公演をタップしてセレクト！</p>
+        </div>
+        <div class="font-bold flex gap-4 items-start"><span
+            class="bg-[#123b53] text-white w-6 h-6 rounded-full flex-none font-black text-xs flex items-center justify-center shadow-lg">2</span>
+          <p>「ハシゴテーブルを表示」をタップ！</p>
+        </div>
+        <div class="font-bold flex gap-4 items-start"><span
+            class="bg-[#123b53] text-white w-6 h-6 rounded-full flex-none font-black text-xs flex items-center justify-center shadow-lg">3</span>
+          <p>完成した自分用ハシゴテーブルを保存して、当日持ち歩こう！</p>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-dashed border-slate-100 text-left">
+        <p class="text-[12px] text-[#123b53] opacity-70 italic leading-tight">
+          ※時間が重複してたり、0分移動（終了と開始が同時刻）がある時は教えてくれるよ！
+        </p>
+      </div>
+      <button onclick="this.closest('#howto-modal').classList.add('hidden')"
+        class="w-full mt-10 bg-[#123b53] text-white py-4 rounded-xl font-[900] shadow-lg text-[10px] uppercase tracking-widest">Got
+        it!</button>
+    </div>
+  </div>
+
+  <div id="my-schedule-modal"
+    class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-[#123b53]/80 backdrop-blur-md">
+    <div class="w-full max-w-sm flex flex-col max-h-[95vh]">
+      <div class="flex justify-end mb-2">
+        <button onclick="closeModal()"
+          class="text-white hover:text-slate-300 text-3xl font-light w-10 h-10 flex items-center justify-center">&times;</button>
+      </div>
+
+      <div id="capture-area"
+        class="bg-[#f9f7f1] p-7 relative overflow-hidden rounded-[2.5rem] shadow-2xl border-4 border-[#123b53] flex-1 overflow-y-auto no-scrollbar">
+        <div class="absolute -top-4 -right-4 text-[100px] opacity-[0.04] font-black pointer-events-none text-[#123b53]"
+          style="font-family: serif;">縁</div>
+        <div
+          class="absolute -bottom-6 -left-6 text-[100px] opacity-[0.03] font-black pointer-events-none text-[#c5304b]"
+          style="font-family: serif;">謎</div>
+
+        <div class="border-b-2 border-dashed border-[#c9a044] pb-5 mb-6 relative z-10 text-center">
+          <div class="text-[9px] font-black tracking-[0.4em] text-[#c5304b] mb-1.5 uppercase">RIDDLE SOLVING FESTIVAL
+          </div>
+          <div id="modal-fes-title"
+            class="text-xl md:text-xl font-[900] text-[#123b53] tracking-tighter leading-tight mb-2 uppercase"
+            style="font-family: 'Noto Serif JP', serif;">---</div>
+          <div id="modal-fes-date" class="text-[10px] font-bold text-[#c9a044] tracking-[0.3em] block uppercase">---
+          </div>
+        </div>
+
+        <div id="modal-conflict-banner"
+          class="hidden mb-5 p-3 bg-rose-50 rounded-xl text-[#c5304b] text-[10px] font-black text-center border border-rose-200 relative z-10">
+          ⚠️ このチョイスだと時間が被っててハシゴ出来ないよ！
+        </div>
+
+        <div id="hashigo-list" class="space-y-3.5 relative z-10"></div>
+
+        <div class="mt-8 pt-4 border-t-2 border-dashed border-[#c9a044]/30 text-center relative z-10">
+          <div class="text-base font-black text-[#123b53] tracking-wider opacity-80 italic">#謎の縁</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3 mt-4">
+        <button id="share-btn" onclick="shareScheduleImage()"
+          class="w-full bg-[#123b53] text-white py-3.5 rounded-xl font-[900] text-sm shadow-xl hover:bg-[#0a2230] active:scale-95 transition-all flex justify-center items-center flex-col leading-tight">
+          <span>📱 SNSでシェアする</span>
+          <span class="text-[10px] font-normal opacity-80 mt-1" id="share-helper-text">PCはXのみ対応</span>
+        </button>
+
+        <button id="download-btn" onclick="downloadScheduleImage()"
+          class="w-full bg-white text-[#123b53] py-3 rounded-xl font-[900] text-sm shadow-sm active:scale-95 transition-all border-2 border-[#123b53]/10 flex justify-center items-center">
+          📸 画像を保存する
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    // ▼▼▼ 注意：API URL はご自身がGASで「新しいデプロイ」をした際の発行URLに書き換えてください ▼▼▼
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwlnWMqXi5wIN-G649TPz3QgPDvGFD_xxP-7sYbc1F-3Q5hSXVBThfpu1Ag_zFVUKzD/exec';
+    // ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲
+
+    let config = {};
+    let allShows = [];
+    let selectedIds = [];
+    let heatmapData = {};            // { 'show-1': 42, 'show-5': 18, ... }
+    let heatmapDebounceTimer = null; // ヒートマップ送信の遅延タイマー
+
+    // 定数：ヘッダーの高さ、1時間あたりのピクセル数
+    const HEADER_OFFSET = 240;
+    const PIXELS_PER_HOUR = 70;
+
+    // --- 初期化処理 ---
+    window.onload = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error('ネットワークエラーが発生しました。');
+        }
+        const data = await response.json();
+
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        // ヒートマップ公開中の場合はデータを保持
+        if (data.heatmap) {
+          heatmapData = data.heatmap;
+        }
+        initApp(data);
+        syncScrollbars();
+        setInterval(updateNowLine, 60000);
+      } catch (e) {
+        showError("データの取得に失敗しました。: " + e.message);
+      }
+    };
+
+    // 文字列の時刻 "HH:MM" を分に変換
+    function timeToMinutes(timeStr) {
+      if (!timeStr || !timeStr.includes(':')) return 0;
+      const parts = timeStr.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+
+    // 現在時刻の赤いラインを更新する関数
+    function updateNowLine() {
+      const now = new Date();
+      const nowH = now.getHours();
+      const nowM = now.getMinutes();
+      const line = document.getElementById('now-line');
+
+      if (config.startHour === undefined || config.endHour === undefined) return;
+
+      if (nowH >= config.startHour && nowH <= config.endHour) {
+        const top = ((nowH - config.startHour) * 60 + nowM) * (PIXELS_PER_HOUR / 60) + HEADER_OFFSET;
+        line.style.top = top + "px";
+        line.classList.remove('hidden');
+      } else {
+        line.classList.add('hidden');
+      }
+    }
+
+    // 印刷用PDFモードの切り替え
+    function togglePdfMode() {
+      document.getElementById('body-tag').classList.add('pdf-mode');
+      alert("作成モードに切り替えました。印刷ダイアログでPDF保存してください。");
+      setTimeout(() => { window.print(); }, 500);
+    }
+
+    // 上下のスクロールバーを連動させる
+    function syncScrollbars() {
+      const wrapper = document.getElementById('top-scrollbar-wrapper');
+      const container = document.getElementById('table-container');
+      if (!wrapper || !container) return;
+
+      wrapper.onscroll = () => { container.scrollLeft = wrapper.scrollLeft; };
+      container.onscroll = () => { wrapper.scrollLeft = container.scrollLeft; };
+    }
+
+    // エラー表示
+    function showError(msg) {
+      document.getElementById('loading-msg').classList.add('hidden');
+      const errDiv = document.getElementById('error-msg');
+      errDiv.innerText = msg;
+      errDiv.classList.remove('hidden');
+    }
+
+    // アプリケーションの描画準備
+    function initApp(data) {
+      // APIから取得した基本設定をパース
+      const rawConfig = data.config;
+      config = {
+        title: rawConfig["イベント名"] || "タイムテーブル",
+        subtitle: rawConfig["サブタイトル(無しでも可)"] || "",
+        date: (rawConfig["開催日(YYYYMMDD)"] || rawConfig["開催日"] || "").replace(/\D/g, ""), // 数字のみ抽出 (2026/05/04 -> 20260504)
+        startHour: parseInt((rawConfig["開始時間"] || "10:00").split(":")[0], 10),
+        endHour: parseInt((rawConfig["終了時間"] || "21:00").split(":")[0], 10),
+        // ★修正箇所：スプレッドシートの新しい列名にも対応
+        headerUrl: rawConfig["ヘッダー画像URL(無しでも可)"] || rawConfig["背景画像URL(無しでも可)"] || "",
+        stepMin: parseInt(rawConfig["タイムテーブルの刻み幅(分)"] || "30", 10)
+      };
+
+      allShows = data.shows;
+
+      // タイトル周りの設定
+      document.getElementById('fes-title').innerText = config.title;
+      let modalTitle = config.title.includes("タイムテーブル")
+        ? config.title.replace("タイムテーブル", "My ハシゴテーブル")
+        : config.title + " My ハシゴテーブル";
+      document.getElementById('modal-fes-title').innerText = modalTitle;
+      document.getElementById('fes-subtitle').innerText = config.subtitle;
+
+      // 日付のフォーマット (YYYYMMDD -> YYYY.MM.DD)
+      const d = config.date;
+      if (d.length === 8) {
+        document.getElementById('modal-fes-date').innerText = `${d.substring(0, 4)}.${d.substring(4, 6)}.${d.substring(6, 8)}`;
+      }
+
+      if (config.headerUrl) {
+        document.getElementById('header-bg').style.backgroundImage = `url('${config.headerUrl}')`;
+      }
+
+      document.getElementById('loading-msg').classList.add('hidden');
+
+      // タイムラインのY軸（時間）を生成
+      const axis = document.getElementById('time-axis');
+      axis.innerHTML = '';
+      for (let i = config.startHour; i <= config.endHour; i++) {
+        axis.innerHTML += `<div style="height:${PIXELS_PER_HOUR}px" class="flex items-start justify-center pt-1 border-t border-slate-100/50">${i}:00</div>`;
+      }
+
+      // ガイド線の間隔を設定（刻み幅が指定されている場合）
+      const stepPx = config.stepMin * (PIXELS_PER_HOUR / 60);
+      const styleEl = document.createElement('style');
+      styleEl.innerHTML = `.venue-col { background-size: 100% ${stepPx}px !important; }`;
+      document.head.appendChild(styleEl);
+
+      renderTimetable(allShows);
+      updateNowLine();
+    }
+
+    // --- タイムテーブルの描画 ---
+    function renderTimetable(shows) {
+      const container = document.getElementById('table-container');
+      container.classList.remove('hidden');
+
+      // 公演タイトルの重複を削除してユニークな列を作成
+      const titles = [...new Set(shows.map(item => item["公演名"]))].filter(Boolean);
+      const grid = document.getElementById('timetable-grid');
+      grid.innerHTML = '';
+
+      // 団体ごとのテーマカラー定義
+      const colors = [
+        { text: "text-blue-800", bg: "bg-blue-100", border: "border-blue-200", accent: "text-blue-500" },
+        { text: "text-indigo-800", bg: "bg-indigo-100", border: "border-indigo-200", accent: "text-indigo-500" },
+        { text: "text-emerald-800", bg: "bg-emerald-100", border: "border-emerald-200", accent: "text-emerald-500" },
+        { text: "text-orange-800", bg: "bg-orange-100", border: "border-orange-200", accent: "text-orange-500" },
+        { text: "text-pink-800", bg: "bg-pink-100", border: "border-pink-200", accent: "text-pink-500" }
+      ];
+
+      titles.forEach((title, index) => {
+        // 当該列の代表的な情報（最初の公演データ）を取得
+        const base = shows.find(s => s["公演名"] === title);
+        const c = colors[index % colors.length];
+        const columnHeight = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR + HEADER_OFFSET;
+
+        let imageUrl = base["公演ビジュアルURL"] || base["画像URL"] || base["画像URL(無しでも可)"] || base.imageUrl;
+
+        // ★Google Driveの仕様変更による画像非表示(403)を回避する変換処理
+        // Apps Script側で変換された uc?export=view... を thumbnail... に再変換
+        if (imageUrl && imageUrl.includes("drive.google.com/uc?export=view&id=")) {
+          imageUrl = imageUrl.replace("uc?export=view&id=", "thumbnail?id=") + "&sz=w1000";
+        }
+        const capacity = base["定員"] || "-";
+        const duration = base["所要時間(分)"] || base.duration || "0";
+        // ★修正箇所：会場の列名に対応
+        const venue = base["会場(部屋)"] || base["会場"] || "未定";
+        const circle = base["団体名"] || base["サークル名"] || "不明";
+        const reserveUrl = base["予約URL"] || base.url;
+
+        // （ヘッダーに対するヒートマップ色付けは廃止）
+
+        // 列（カラム）のベースとヘッダー部分
+        let colHtml = `
+        <div class="venue-col flex-1 border-r border-slate-100" style="height:${columnHeight}px">
+          <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left"> 
+
+            <div class="flex gap-2 items-start mb-2">
+              <div class="flex-1 min-w-0">
+                <div class="text-[8px] font-black ${c.text} opacity-80 bg-white border ${c.border} px-1.5 py-0.5 rounded inline-block mb-1.5 tracking-widest leading-none break-words">${circle}</div>
+                <h3 class="font-[900] text-[13px] leading-[1.2] text-[#123b53] line-clamp-5">${title}</h3>
+              </div>
+              ${imageUrl
+            ? `<img src="${imageUrl}" class="program-visual" alt="visual">`
+            : `<div class="program-visual flex items-center justify-center text-[10px] text-slate-300 font-bold italic text-center leading-tight">No Visual</div>`
+          }
+            </div>
+            
+            <div class="space-y-0.5 text-[9.5px] uppercase tracking-wider mb-2 font-black">
+              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>定員:</span> <span class="text-[#123b53] font-black">${capacity}</span></div>
+              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${duration}分</span></div>
+              <div class="pt-0.5">
+                <span class="border-2 border-[#123b53]/10 bg-white ${c.text.replace('800', '700')} px-2 py-0.5 rounded text-[9px] font-black flex items-center gap-1 leading-none shadow-sm w-fit">
+                  <span class="text-[#c9a044]">📍</span> ${venue}
+                </span>
+              </div>
+            </div>
+            
+            <div class="mt-auto mb-1.5 reserve-btn-area">
+              ${reserveUrl && reserveUrl !== ""
+            ? `<a href="${reserveUrl}" target="_blank" class="w-full bg-[#123b53] hover:bg-[#0a2230] text-white text-[11px] font-[900] py-1.5 rounded flex items-center justify-center shadow-lg transition-all uppercase tracking-tighter active:scale-95">予約する</a>`
+            : `<div class="h-8"></div>`
+          }
+            </div>
+          </div>`;
+
+        // 該当公演のタイムスロット（カード）を配置
+        shows.filter(s => s["公演名"] === title).forEach(show => {
+          const startStr = show["開始時間(hh:mm)"] || show.start;
+          if (!startStr || !startStr.includes(":")) return;
+
+          const [h, m] = startStr.split(":").map(Number);
+          const top = ((h - config.startHour) * 60 + m) * (PIXELS_PER_HOUR / 60) + HEADER_OFFSET;
+
+          // ★修正箇所：完売設定の列名に完全対応
+          const isSoldOut = show["完売設定"] === true || show["完売設定"] === "true" || show["完売設定"] === "完売" || show["完売設定"] === "売切" || show["完売"] === true || show["完売"] === "true" || show["完売"] === "完売";
+
+          const soldOutClass = isSoldOut ? "opacity-30 grayscale pointer-events-none shadow-none" : "cursor-pointer";
+          const soldOutBadge = isSoldOut
+            ? `<div class="absolute inset-0 flex items-center justify-center z-10"><span class="bg-[#c5304b] text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg transform -rotate-12 uppercase text-center">SOLD OUT</span></div>`
+            : "";
+
+          const showDuration = show["所要時間(分)"] || show.duration || 0;
+          const endStr = show.endTime || show.end || "";
+          const showId = show.id || `show-${index}-${Math.random().toString(36).substr(2, 9)}`;
+          show.id = showId; // 後で検索できるようにIDを付与
+
+          // ★追加：個別の公演枠に対するヒートマップ計算
+          const currentShowCount = heatmapData[showId] || 0;
+          const allCounts = Object.values(heatmapData);
+          const maxCount = allCounts.length > 0 ? Math.max(...allCounts) : 1;
+          const heatIntensity = maxCount > 0 ? Math.min(currentShowCount / maxCount, 1) : 0;
+
+          let cardStyle = `top:${top}px; height:${showDuration * (PIXELS_PER_HOUR / 60) - 1}px;`;
+
+          // 人気度に応じて、元々のカード色（c.bg）に重ねて赤色（rgba(239,68,68, alpha)）をブレンドする
+          if (currentShowCount > 0) {
+            const heatAlpha = (heatIntensity * 0.75).toFixed(2); // 最大75%の赤みを乗算
+            // !importantをつけてTailwindのbg-*クラスを上書きブレンド
+            cardStyle += ` background-color: rgba(239, 68, 68, ${heatAlpha}) !important; border-color: rgba(185, 28, 28, ${heatAlpha}) !important;`;
+          }
+
+          colHtml += `
+          <div onclick="toggleShow('${showId}')" id="card-${showId}" 
+               style="${cardStyle}" 
+               class="absolute left-3 right-3 p-4 transition-all duration-300 flex flex-col items-center justify-center timetable-card border border-slate-200 ${c.bg} ${c.border} ${soldOutClass} hover:brightness-95">
+            ${soldOutBadge}
+            <div class="font-black text-[11px] text-center leading-none ${c.text.replace('800', '700')}">${startStr} — ${endStr}</div>
+            ${currentShowCount > 0 ? `<div class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse z-20 tooltip-trigger" title="${currentShowCount}人がハシゴ予定！">🔥</div>` : ''}
+          </div>`;
+        });
+
+        grid.innerHTML += colHtml + `</div>`;
+      });
+
+      // スクロールバーの幅をコンテンツに合わせる
+      const topScrollWrapper = document.getElementById('top-scrollbar-wrapper');
+      const topScrollContent = document.getElementById('top-scrollbar-content');
+      topScrollWrapper.classList.remove('hidden');
+      setTimeout(() => {
+        if (container && topScrollContent) topScrollContent.style.width = container.scrollWidth + "px";
+      }, 500);
+    }
+
+    // --- 公演の選択・解除 ---
+    function toggleShow(id) {
+      const idx = selectedIds.indexOf(id);
+      const card = document.getElementById(`card-${id}`);
+
+      if (idx > -1) {
+        selectedIds.splice(idx, 1);
+        card.classList.remove('selected-card');
+      } else {
+        selectedIds.push(id);
+        card.classList.add('selected-card');
+      }
+      updateUI();
+      // ハシゴの変更を３秒待ってヒートマップ送信（debounce）
+      clearTimeout(heatmapDebounceTimer);
+      heatmapDebounceTimer = setTimeout(() => sendHeatmapData(), 3000);
+    }
+
+    // --- UIの更新（被り判定と下部バーの表示） ---
+    function updateUI() {
+      let hasConflict = false;
+
+      selectedIds.forEach((id1, i) => {
+        const s1 = allShows.find(s => s.id == id1);
+        document.getElementById(`card-${id1}`).classList.remove('conflict');
+
+        const start1 = timeToMinutes(s1["開始時間(hh:mm)"] || s1.start);
+        const end1 = timeToMinutes(s1.endTime || s1.end);
+
+        selectedIds.forEach((id2, j) => {
+          if (i >= j) return; // 重複チェックを防ぐ
+          const s2 = allShows.find(s => s.id == id2);
+
+          const start2 = timeToMinutes(s2["開始時間(hh:mm)"] || s2.start);
+          const end2 = timeToMinutes(s2.endTime || s2.end);
+
+          // 0分移動（終了と同時に開始）も「被り」として警告を出す判定
+          if ((start1 <= end2 && end1 >= start2) || (start2 <= end1 && end2 >= start1)) {
+            hasConflict = true;
+            document.getElementById(`card-${id1}`).classList.add('conflict');
+            document.getElementById(`card-${id2}`).classList.add('conflict');
+          }
+        });
+      });
+
+      document.getElementById('conflict-warning').classList.toggle('hidden', !hasConflict);
+
+      const bar = document.getElementById('selection-bar');
+      bar.classList.toggle('translate-y-64', selectedIds.length === 0);
+      bar.classList.toggle('translate-y-0', selectedIds.length > 0);
+
+      const container = document.getElementById('selected-items');
+      container.innerHTML = selectedIds.map(sid => {
+        const s = allShows.find(sh => sh.id == sid);
+        const startStr = s["開始時間(hh:mm)"] || s.start;
+        const title = s["公演名"] || s.title;
+        return `
+        <div class="bg-white/10 border border-white/10 px-4 py-2.5 rounded-2xl text-[11px] font-bold flex-none shadow-inner text-center">
+          <span class="text-[#c9a044] mr-2">${startStr}</span>${title}
+        </div>`;
+      }).join('');
+    }
+
+    // ============================================================
+    // --- ヒートマップ送信処理 ---
+    // ============================================================
+
+    // UUIDを生成または既存のものを取得
+    function getOrCreateUserId() {
+      let uid = localStorage.getItem('heatmap_user_id');
+      if (!uid) {
+        uid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        localStorage.setItem('heatmap_user_id', uid);
+      }
+      return uid;
+    }
+
+    // ハシゴ選択データをGASへPOST送信する
+    async function sendHeatmapData() {
+      try {
+        const userId = getOrCreateUserId();
+        await fetch(API_URL, {
+          method: 'POST',
+          // GASのPOST受信は Content-Type: text/plain を推奨
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ userId, selectedIds })
+        });
+      } catch (e) {
+        console.warn('Heatmap send failed (silent):', e);
+      }
+    }
+
+    // 選択リセット
+    function clearSelection() {
+      selectedIds.forEach(id => {
+        const el = document.getElementById(`card-${id}`);
+        if (el) el.classList.remove('selected-card', 'conflict');
+      });
+      selectedIds = [];
+      updateUI();
+      // リセット時も送信（空配列を送る）
+      clearTimeout(heatmapDebounceTimer);
+      heatmapDebounceTimer = setTimeout(() => sendHeatmapData(), 3000);
+    }
+
+    // --- ハシゴテーブルの生成とモーダル表示 ---
+    function showHashigoTable() {
+      const list = document.getElementById('hashigo-list');
+      const banner = document.getElementById('modal-conflict-banner');
+      list.innerHTML = '';
+
+      const sel = allShows.filter(s => selectedIds.includes(s.id)).sort((a, b) => {
+        const tA = (a["開始時間(hh:mm)"] || a.start) || "";
+        const tB = (b["開始時間(hh:mm)"] || b.start) || "";
+        return tA.localeCompare(tB);
+      });
+
+      let overlap = false;
+      for (let i = 0; i < sel.length - 1; i++) {
+        const end1 = timeToMinutes(sel[i].endTime || sel[i].end);
+        const start2 = timeToMinutes(sel[i + 1]["開始時間(hh:mm)"] || sel[i + 1].start);
+        if (end1 >= start2) overlap = true;
+      }
+      banner.classList.toggle('hidden', !overlap);
+
+      sel.forEach(s => {
+        const circle = s["団体名"] || s["サークル名"] || "不明";
+        // ★修正箇所：モーダル内の会場表示
+        const venue = s["会場(部屋)"] || s["会場"] || "未定";
+        const title = s["公演名"] || s.title;
+        const startStr = s["開始時間(hh:mm)"] || s.start;
+        const endStr = s.endTime || s.end;
+
+        list.innerHTML += `
+        <div class="hashigo-card bg-white p-3 rounded-lg shadow-sm border border-[#c9a044]/30 relative overflow-hidden text-left">
+          <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#c5304b]"></div>
+          <div class="ml-2">
+            <div class="flex justify-between items-start mb-1 gap-2">
+              <div class="text-[9px] font-black text-[#123b53] tracking-tighter leading-tight">${circle}</div>
+              <div class="text-[10px] font-black text-[#c9a044] bg-[#f9f7f1] border border-[#c9a044]/30 px-2 py-0.5 rounded leading-normal whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                <span style="font-family: sans-serif;">📍</span>
+                <span>${venue}</span>
+              </div>
+            </div>
+            <div class="font-black text-sm text-slate-900 leading-tight mb-2">${title}</div>
+            <div class="text-[11px] font-black text-slate-500 tracking-tighter">🕒 ${startStr} — ${endStr}</div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('my-schedule-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('my-schedule-modal').classList.add('hidden');
+    }
+
+    // --- ① 画像保存処理（PC・スマホ共通） ---
+    async function downloadScheduleImage() {
+      const btn = document.getElementById('download-btn');
+      const area = document.getElementById('capture-area');
+      const originalText = btn.innerHTML;
+
+      btn.innerText = "画像生成中...";
+      btn.disabled = true;
+
+      try {
+        const dataUrl = await htmlToImage.toPng(area, {
+          quality: 1.0,
+          pixelRatio: 3,
+          style: { overflow: 'visible', borderRadius: '2.5rem' }
+        });
+        const link = document.createElement('a');
+        link.download = `my-hashigo-pass-${config.date}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (error) {
+        console.error('画像生成エラー:', error);
+        alert("保存に失敗しました。");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // --- ② SNS投稿処理（スマホ/PC対応） ---
+    async function shareScheduleImage() {
+      const btn = document.getElementById('share-btn');
+      const area = document.getElementById('capture-area');
+      const originalText = btn.innerHTML;
+
+      btn.innerHTML = `<span>⏳ 準備中...</span>`;
+      btn.disabled = true;
+
+      try {
+        const blob = await htmlToImage.toBlob(area, {
+          quality: 1.0,
+          pixelRatio: 3,
+          style: { overflow: 'visible', borderRadius: '2.5rem' }
+        });
+
+        const file = new File([blob], `hashigo-pass-${config.date}.png`, { type: 'image/png' });
+        const shareText = '名古屋 謎の縁のマイハシゴテーブルを作成したよ！\n#名古屋謎の縁 \nhttps://telescope-kizunan.github.io/NAZOTOKI-FES-TIME-TABLE/';
+
+        // スマホ（Web Share API対応かつ、実際のモバイル端末）か厳密にチェック
+        // ※Windows 11のEdge/ChromeなどでもcanShareが通ってしまいPC用シェア画面が出るのを防ぐため
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: shareText });
+        } else {
+          // PC等の場合：クリップボードコピー ＋ X画面を開く
+          try {
+            const item = new ClipboardItem({ [blob.type]: blob });
+            await navigator.clipboard.write([item]);
+
+            alert("画像をクリップボードにコピーしました！\n\nOKを押すとX(Twitter)の投稿画面が開きます。\nテキスト入力欄で「貼り付け (Ctrl+V)」を押して画像を添付してください！");
+
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            window.open(twitterUrl, '_blank');
+          } catch (clipboardError) {
+            console.error("クリップボードコピー失敗:", clipboardError);
+            alert("お使いのブラウザは画像の自動コピーに対応していません（または、ローカルファイルから直接開いているため制限されています）。\n\n下の「画像を保存する」ボタンから保存して、手動でシェアをお願いします。");
+          }
+        }
+      } catch (error) {
+        console.error('シェア処理エラー:', error);
+        alert("画像の生成に失敗しました。");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+
+</html>
