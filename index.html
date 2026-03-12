@@ -583,13 +583,13 @@
             </div>`;
         }
 
-        // ★完全修正版：美しい縦並び（flex-col）構造に戻しつつ、タイトル部のみ140px制限をかける
+        // ★タイトル部のみ5文字幅＋α(80px)制限をかける
         let colHtml = `
         <div class="venue-col border-r border-slate-100" style="height:${columnHeight}px" data-reservation="${reservationType}">
           <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left"> 
             
             <div class="flex gap-2 items-start mb-2">
-              <div class="w-[140px] flex-none">
+              <div class="w-[80px] flex-none">
                 <div class="text-[8px] font-black ${c.text} opacity-80 bg-white border ${c.border} px-1.5 py-0.5 rounded inline-block mb-1.5 tracking-widest leading-none break-words whitespace-pre-wrap">${circle}</div>
                 <h3 class="font-[900] text-[13px] leading-[1.3] text-[#123b53] break-words whitespace-pre-wrap">${title}</h3>
               </div>
