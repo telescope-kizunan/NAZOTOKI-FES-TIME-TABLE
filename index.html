@@ -601,7 +601,7 @@
             const height = showDuration * (PIXELS_PER_HOUR / 60) - 1;
             cardStyle = `top:${top}px; height:${height}px;`;
             const endStr = show.endTime || show.end || "";
-            timeDisplay = `${startStr} — ${endStr}`;
+            timeDisplay = `${startStr} - ${endStr}`;
           }
           
           if (currentShowCount > 0) {
@@ -883,6 +883,7 @@ function updateUI() {
     }
 
   </script>
+
 
 
 
