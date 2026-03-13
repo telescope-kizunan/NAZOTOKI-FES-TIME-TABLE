@@ -325,7 +325,7 @@
         <div id="selected-items" class="flex gap-2 md:gap-3 overflow-x-auto pb-1 pt-1 no-scrollbar justify-start items-center w-full">
           </div>
         <div class="flex items-center gap-4 w-full lg:w-auto shrink-0 justify-end mt-1 md:mt-0">
-          <button onclick="resetSelection()" class="text-[10px] md:text-xs font-black tracking-widest opacity-60 hover:opacity-100 transition-opacity uppercase">RESET</button>
+          <button onclick="clearSelection()" class="text-[10px] md:text-xs font-black tracking-widest opacity-60 hover:opacity-100 transition-opacity uppercase">RESET</button>
           <button onclick="showHashigoTable()" class="bg-white text-[#123b53] px-4 py-2.5 md:px-6 md:py-3 rounded-lg md:rounded-xl font-black text-xs md:text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 border-2 border-[#123b53]/10 whitespace-nowrap">
             ハシゴテーブルを表示
           </button>
@@ -925,6 +925,7 @@ function updateUI() {
     }
 
   </script>
+
 
 
 
