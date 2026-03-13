@@ -243,23 +243,27 @@
 
 <body id="body-tag" class="main-bg text-slate-900 antialiased leading-tight">
 
-  <div id="header-bg" class="header-image-box relative">
-    <header class="header-overlay relative pt-16 pb-16 px-4 md:px-6 flex flex-col items-center text-center overflow-hidden">
+<div id="header-bg" class="header-image-box relative">
+    <header class="header-overlay relative pt-6 pb-8 md:pt-16 md:pb-16 px-4 md:px-6 flex flex-col items-center text-center overflow-hidden">
 
-      <div class="title-banner-card z-10 py-10 px-8 md:px-16 max-w-4xl w-full text-center transition-all hover:-translate-y-1 duration-500">
-        <div class="flex justify-center items-center gap-3 mb-6">
+      <div class="title-banner-card z-10 py-6 px-5 md:py-10 md:px-8 max-w-4xl w-full text-center transition-all hover:-translate-y-1 duration-500">
+        
+        <div class="flex justify-center items-center gap-3 mb-4 md:mb-6">
           <div class="h-[2px] w-12 bg-gradient-to-r from-transparent to-[#c9a044]"></div>
           <div class="px-4 py-1.5 text-[8px] sm:text-[10px] font-black tracking-[0.4em] text-white bg-[#123b53] rounded-full uppercase shadow-md border border-[#123b53]/20">
             RIDDLE SOLVING FESTIVAL
           </div>
           <div class="h-[2px] w-12 bg-gradient-to-l from-transparent to-[#c9a044]"></div>
         </div>
-        <h1 id="fes-title" class="fancy-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#123b53] mb-6 drop-shadow-sm leading-tight">
+        
+        <h1 id="fes-title" class="fancy-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#123b53] mb-4 md:mb-6 drop-shadow-sm leading-tight">
           読み込み中...</h1>
+          
         <div class="flex justify-center items-center gap-4 relative z-10">
           <p id="fes-subtitle" class="text-slate-500 font-bold text-[10px] md:text-sm tracking-[0.2em] uppercase bg-white/60 px-4 py-1.5 rounded-full border border-white shadow-sm">
             データ取得中</p>
         </div>
+        
         <div class="absolute -right-6 -bottom-10 text-[150px] opacity-[0.03] font-black pointer-events-none text-[#123b53] mix-blend-overlay" style="font-family: serif;">謎</div>
       </div>
 
@@ -919,6 +923,7 @@ function updateUI() {
     }
 
   </script>
+
 
 
 
