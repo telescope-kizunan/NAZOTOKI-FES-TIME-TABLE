@@ -740,12 +740,12 @@ function updateUI() {
         
         // 被っている公演に警告マーク付与
         const isConflict = document.getElementById(`card-${sid}`)?.classList.contains('conflict');
-        const warningIcon = isConflict ? '<span class="material-symbols-outlined text-[13px] text-[#c5304b] animate-pulse align-middle">brightness_alert</span>' : '';
-
+        const warningIcon = isConflict ? '<span class="material-symbols-outlined text-[13px] text-[#c5304b] animate-pulse">brightness_alert</span>' : '';
         return `
         <div class="relative bg-white/10 border border-white/10 px-4 py-2.5 mt-2 rounded-2xl text-[11px] font-bold flex-none shadow-inner text-center group">
           <button onclick="toggleShow('${sid}', event)" class="absolute -top-2 -right-1 bg-slate-700 hover:bg-[#c5304b] text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-md transition-all">×</button>
-          <span class="text-[#c9a044] mr-1">${warningIcon}${displayTime}</span>${title}
+          <span class="text-[#c9a044] mr-1 inline-flex items-center gap-0.5">${warningIcon}${displayTime}</span>
+          <span class="align-middle">${title}</span>
         </div>`;
       }).join('');
     }
@@ -923,6 +923,7 @@ function updateUI() {
     }
 
   </script>
+
 
 
 
