@@ -71,17 +71,15 @@
       z-index: 30 !important;
     }
 
-    /* 0分移動禁止・被り警告アニメーション */
+/* 0分移動禁止・被り警告アニメーション */
     .conflict {
-      border-color: #c5304b !important;
-      background-color: #ffe4e6 !important;
-      animation: pulse 2s infinite;
+      border-color: #991b1b !important; /* より濃い赤 */
+      background-color: #fef2f2 !important;
+      animation: pulse-danger 2s infinite;
     }
-
-    @keyframes pulse {
-      0%,
-      100% { box-shadow: 0 0 0 0 rgba(197, 48, 75, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(197, 48, 75, 0); }
+    @keyframes pulse-danger {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(153, 27, 27, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(153, 27, 27, 0); }
     }
 
     /* 4. 背景：和紙テクスチャ */
@@ -314,7 +312,7 @@
           <div id="conflict-warning" class="hidden text-[#ff6b8b] text-[11px] font-black mb-2 animate-pulse uppercase tracking-tight">
             ⚠️ このチョイスだと時間が被っててハシゴ出来ないよ！
           </div>
-          <div id="selected-items" class="flex gap-2 md:gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar justify-center md:justify-start items-center"></div>
+          <div id="selected-items" class="flex gap-2 md:gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar md:justify-start items-center"></div>
         </div>
         <div class="flex items-center gap-4 md:gap-6">
           <button onclick="clearSelection()" class="text-slate-400 text-[11px] font-black uppercase tracking-widest hover:text-white transition-colors">Reset</button>
@@ -533,7 +531,7 @@
       updateNowLine();
     }
 
-    function renderTimetable(shows) {
+   function renderTimetable(shows) {
       const container = document.getElementById('table-container');
       container.classList.remove('hidden');
 
@@ -568,9 +566,11 @@
         
         let buttonHtml = `<div class="h-8"></div>`;
         if (isFamilyStyle) {
-          buttonHtml = `<div class="w-full bg-orange-500 text-white text-[11px] font-[900] py-1.5 rounded flex items-center justify-center shadow-lg uppercase tracking-tighter cursor-default">当日現地受付</div>`;
+          // 当日受付ボタン
+          buttonHtml = `<div class="w-full bg-orange-50/80 border border-orange-400/50 text-orange-600 text-[10px] font-bold py-1.5 rounded flex items-center justify-center uppercase tracking-tighter cursor-default">当日現地受付</div>`;
         } else if (reserveUrl && reserveUrl !== "") {
-          buttonHtml = `<a href="${reserveUrl}" target="_blank" class="w-full bg-[#123b53] hover:bg-[#0a2230] text-white text-[11px] font-[900] py-1.5 rounded flex items-center justify-center shadow-lg transition-all uppercase tracking-tighter active:scale-95">予約する</a>`;
+          // 予約ボタン
+          buttonHtml = `<a href="${reserveUrl}" target="_blank" class="w-full bg-slate-50 border border-slate-300 hover:bg-slate-100 text-slate-600 text-[11px] font-bold py-1.5 rounded flex items-center justify-center transition-all uppercase tracking-tighter active:scale-95">予約する</a>`;
         }
 
         let priceHtml = '';
@@ -583,7 +583,6 @@
             </div>`;
         }
 
-        // ★タイトル部のみ5文字幅＋α(80px)制限をかける
         let colHtml = `
         <div class="venue-col border-r border-slate-100" style="height:${columnHeight}px" data-reservation="${reservationType}">
           <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left"> 
@@ -608,15 +607,14 @@
             <div class="mt-auto mb-1.5 reserve-btn-area">
               ${buttonHtml}
             </div>
-            
           </div>`;
 
         shows.filter(s => s["公演名"] === title).forEach(show => {
           const startStr = show["開始時間(hh:mm)"] || show.start;
           if (!startStr || !startStr.includes(":")) return;
           const isSoldOut = show["完売設定"] === true || show["完売設定"] === "true" || show["完売設定"] === "完売" || show["完売設定"] === "売切" || show["完売"] === true || show["完売"] === "true" || show["完売"] === "完売";
-          const soldOutClass = isSoldOut ? "opacity-30 grayscale pointer-events-none shadow-none" : "cursor-pointer";
-          const soldOutBadge = isSoldOut ? `<div class="absolute inset-0 flex items-center justify-center z-10"><span class="bg-[#c5304b] text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg transform -rotate-12 uppercase text-center">SOLD OUT</span></div>` : "";
+          const soldOutClass = isSoldOut ? "opacity-40 grayscale pointer-events-none shadow-none" : "cursor-pointer";
+          const soldOutBadge = isSoldOut ? `<div class="absolute inset-0 flex items-center justify-center z-10"><span class="bg-slate-700 text-white text-[8px] font-black px-2 py-0.5 rounded shadow-lg transform -rotate-12 uppercase text-center tracking-widest">SOLD OUT</span></div>` : "";
           const showId = show.id || `show-${index}-${Math.random().toString(36).substr(2, 9)}`;
           show.id = showId;
           const currentShowCount = heatmapData[showId] || 0;
@@ -640,9 +638,12 @@
             const endStr = show.endTime || show.end || "";
             timeDisplay = `${startStr} — ${endStr}`;
           }
+          
           if (currentShowCount > 0) {
-            const heatAlpha = (heatIntensity * 0.75).toFixed(2);
-            cardStyle += ` background-color: rgba(239, 68, 68, ${heatAlpha}) !important; border-color: rgba(185, 28, 28, ${heatAlpha}) !important;`;
+            // ヒートマップ黄色(60)→オレンジ(30)→赤(0)のグラデーション
+            const hue = 60 - (heatIntensity * 60); 
+            const heatAlpha = (0.2 + (heatIntensity * 0.6)).toFixed(2);
+            cardStyle += ` background-color: hsla(${hue}, 90%, 60%, ${heatAlpha}) !important; border-color: hsla(${hue}, 90%, 50%, ${heatAlpha}) !important;`;
           }
           
           colHtml += `
@@ -682,7 +683,7 @@
       heatmapDebounceTimer = setTimeout(() => sendHeatmapData(), 3000);
     }
 
-    function updateUI() {
+function updateUI() {
       let hasConflict = false;
       selectedIds.forEach((id1, i) => {
         const s1 = allShows.find(s => s.id == id1);
@@ -716,10 +717,15 @@
         const title = s["公演名"] || s.title;
         const isFamily = (s["予約形式"] || "") === "当日受付(ファミレス式)";
         const displayTime = isFamily ? "随時" : startStr;
+        
+        // 被っている公演に警告マーク付与
+        const isConflict = document.getElementById(`card-${sid}`)?.classList.contains('conflict');
+        const warningIcon = isConflict ? '<span class="text-[#c5304b] mr-1 animate-pulse">⚠️</span>' : '';
+
         return `
         <div class="relative bg-white/10 border border-white/10 px-4 py-2.5 mt-2 rounded-2xl text-[11px] font-bold flex-none shadow-inner text-center group">
           <button onclick="toggleShow('${sid}', event)" class="absolute -top-2 -right-1 bg-slate-700 hover:bg-[#c5304b] text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-md transition-all">×</button>
-          <span class="text-[#c9a044] mr-2">${displayTime}</span>${title}
+          <span class="text-[#c9a044] mr-1">${warningIcon}${displayTime}</span>${title}
         </div>`;
       }).join('');
     }
@@ -895,4 +901,5 @@
         btn.disabled = false;
       }
     }
+
   </script>
