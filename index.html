@@ -576,9 +576,9 @@
         let buttonHtml = `<div class="h-8"></div>`;
         if (isFamilyStyle) {
           // 当日受付ボタン
-          buttonHtml = `<div class="w-full bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold py-1.5 rounded flex items-center justify-center uppercase tracking-tighter cursor-default">当日現地受付</div>`;
+          buttonHtml = `<div class="w-full bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold py-1.5 rounded flex items-center justify-center uppercase tracking-tighter cursor-default">当日現地受付</div>`;
         } else if (reserveUrl && reserveUrl !== "") {
-          // ★UI改善: 予約ボタン
+          // 予約ボタン
           buttonHtml = `<a href="${reserveUrl}" target="_blank" class="w-full bg-[#123b53]/10 border border-[#123b53]/30 hover:bg-[#123b53]/20 text-[#123b53] text-[11px] font-bold py-1.5 rounded flex items-center justify-center transition-all uppercase tracking-tighter active:scale-95">予約する</a>`;
         }
 
@@ -919,6 +919,7 @@ function updateUI() {
     }
 
   </script>
+
 
 
 
