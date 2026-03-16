@@ -628,15 +628,16 @@
       const topScrollContent = document.getElementById('top-scrollbar-content');
       topScrollWrapper.classList.remove('hidden');
 
-      // ResizeObserverで幅の変動を自動同期させる
-      const grid = document.getElementById('timetable-grid');
-      if (container && topScrollContent && grid) {
-        const resizeObserver = new ResizeObserver(() => {
+      // 画像が遅れて読み込まれても幅が合うように、0.5秒ごとに数回だけ幅を再計算する
+      let checkCount = 0;
+      const syncInterval = setInterval(() => {
+        if (container && topScrollContent) {
           topScrollContent.style.width = container.scrollWidth + "px";
-        });
-        // 画像やフォントが読み込まれて幅が変わるたびに上の処理が走る
-        resizeObserver.observe(grid);
-      }
+        }
+        checkCount++;
+        if (checkCount >= 10) clearInterval(syncInterval); // 5秒後（10回確認後）に監視を完全ストップ
+      }, 500);
+    } // 
 
     function toggleShow(id, event) {
       if (event) event.stopPropagation();
