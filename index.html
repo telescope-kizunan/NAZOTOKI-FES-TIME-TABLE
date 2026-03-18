@@ -389,7 +389,7 @@
     const HEADER_OFFSET = 240;
     const PIXELS_PER_HOUR = 70;
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    window.onload = async () => {
       try {
         const response = await fetch(API_URL);
         if (!response.ok) throw new Error('ネットワークエラーが発生しました。');
