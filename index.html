@@ -240,18 +240,18 @@
 
   <div class="relative max-w-[1800px] mx-auto px-6 pb-40">
 
-    <div class="relative guide-area-wrapper mb-4">
-      <div class="flex flex-nowrap justify-start items-center gap-2 md:gap-4 md:overflow-visible w-full">
+<div class="relative guide-area-wrapper mb-4">
+      <div class="flex flex-nowrap justify-start items-center gap-2 md:gap-4 overflow-x-auto md:overflow-visible w-full no-scrollbar pb-1">
         <button onclick="document.getElementById('howto-modal').classList.remove('hidden')"
-          class="bg-[#123b53] hover:bg-[#0a2230] text-white text-[11px] font-[900] px-5 py-2.5 rounded-full shadow-xl transition-all flex items-center gap-2 uppercase tracking-widest active:scale-95 border-2 border-white">
-          <span class="bg-[#c9a044] text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black italic">?</span>
+          class="shrink-0 whitespace-nowrap bg-[#123b53] hover:bg-[#0a2230] text-white text-[10px] md:text-[11px] font-[900] px-3 py-2 md:px-5 md:py-2.5 rounded-full shadow-xl transition-all flex items-center gap-1.5 md:gap-2 uppercase tracking-widest active:scale-95 border-2 border-white">
+          <span class="bg-[#c9a044] text-white w-3 h-3 md:w-4 md:h-4 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-black italic">?</span>
           使い方ガイド
         </button>
 
-        <div class="bg-white/50 backdrop-blur-md p-1 rounded-full shadow-inner border border-slate-200 flex gap-1 items-center">
-          <button onclick="filterShows('ALL')" id="filter-btn-ALL" class="filter-btn active-filter bg-[#123b53] text-white px-4 py-1.5 rounded-full text-[11px] font-black transition-all">すべて</button>
-          <button onclick="filterShows('事前予約')" id="filter-btn-PRE" class="filter-btn text-slate-500 hover:bg-white/60 px-4 py-1.5 rounded-full text-[11px] font-black transition-all">事前予約</button>
-          <button onclick="filterShows('当日受付(ファミレス式)')" id="filter-btn-DAY" class="filter-btn text-slate-500 hover:bg-white/60 px-4 py-1.5 rounded-full text-[11px] font-black transition-all">当日受付</button>
+        <div class="shrink-0 bg-white/50 backdrop-blur-md p-1 rounded-full shadow-inner border border-slate-200 flex gap-1 items-center">
+          <button onclick="filterShows('ALL')" id="filter-btn-ALL" class="filter-btn active-filter bg-[#123b53] text-white px-3 py-1.5 md:px-4 text-[10px] md:text-[11px] font-black transition-all whitespace-nowrap">すべて</button>
+          <button onclick="filterShows('事前予約')" id="filter-btn-PRE" class="filter-btn text-slate-500 hover:bg-white/60 px-3 py-1.5 md:px-4 text-[10px] md:text-[11px] font-black transition-all whitespace-nowrap">事前予約</button>
+          <button onclick="filterShows('当日受付(ファミレス式)')" id="filter-btn-DAY" class="filter-btn text-slate-500 hover:bg-white/60 px-3 py-1.5 md:px-4 text-[10px] md:text-[11px] font-black transition-all whitespace-nowrap">当日受付</button>
         </div>
       </div>
     </div>
