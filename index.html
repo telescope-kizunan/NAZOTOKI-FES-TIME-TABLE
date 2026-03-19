@@ -551,8 +551,12 @@
         { text: "text-pink-800", bg: "bg-pink-100", border: "border-pink-200", accent: "text-pink-500" }
       ];
 
-     // グループ内の全公演データを取得
+      titles.forEach((title, index) => {
+        // グループ内の全公演データを取得
         const groupShows = shows.filter(s => s["公演名"] === title);
+        const base = groupShows[0];
+        const c = colors[index % colors.length];
+        const columnHeight = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR + HEADER_OFFSET;
         
         let imageUrl = base["公演ビジュアルURL"] || base["画像URL"] || base["画像URL(無しでも可)"] || base.imageUrl;
         if (imageUrl && imageUrl.includes("drive.google.com/uc?export=view&id=")) {
