@@ -222,13 +222,13 @@
     }
     .mystic-text {
       color: transparent !important;
-      text-shadow: 0 0 6px rgba(18, 59, 83, 0.35);
+      text-shadow: 0 0 12px rgba(18, 59, 83, 0.5);
       user-select: none;
       animation: pulse-blur 4s infinite alternate ease-in-out;
     }
     @keyframes pulse-blur {
-      0% { text-shadow: 0 0 3px rgba(18, 59, 83, 0.2); }
-      100% { text-shadow: 0 0 8px rgba(18, 59, 83, 0.5); }
+      0% { text-shadow: 0 0 8px rgba(18, 59, 83, 0.4); }
+      100% { text-shadow: 0 0 16px rgba(18, 59, 83, 0.6); }
     }
   </style>
 </head>
@@ -685,7 +685,7 @@
           }
 
           // 下の時間割カードにもぼかしを適用
-          const cardNoiseClass = isNoise ? "!bg-slate-50/80 backdrop-blur-sm !border-slate-200" : `${c.bg} ${c.border}`;
+          const cardNoiseClass = isNoise ? "!bg-slate-50/80 backdrop-blur-sm !border-slate-200 pointer-events-none" : `${c.bg} ${c.border}`;
           const textNoiseClass = isNoise ? "mystic-text" : c.text.replace('800', '700');
           
           colHtml += `
