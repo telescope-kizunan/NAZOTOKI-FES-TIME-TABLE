@@ -429,7 +429,7 @@
       const parts = timeStr.split(':');
       return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
     }
-  　// 公演カードUNLOCK後予約ページ遷移
+  　// 公演カードLOCK後予約ページ遷移
     function unlockReserve(correctPassword, url) {
       const input = prompt("【LOCKED】\nパスワードを入力してください");
       if (input === null) return;
@@ -607,9 +607,9 @@
         if (isFamilyStyle) {
           buttonHtml = `<div class="w-full bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold py-1.5 rounded flex items-center justify-center uppercase tracking-tighter cursor-default">当日現地受付</div>`;
         } else if (hasLock) {
-          buttonHtml = `<button onclick="unlockReserve('${lockPassword}', '${reserveUrl}')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 text-[11px] font-bold py-1.5 rounded flex items-center justify-center gap-1.5 transition-all uppercase tracking-tighter active:scale-95 shadow-sm"><span class="material-symbols-outlined text-[14px] text-[#c9a044]">lock</span>UNLOCKED</button>`;
+          buttonHtml = `<button onclick="unlockReserve('${lockPassword}', '${reserveUrl}')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 text-[11px] font-bold py-1.5 rounded flex items-center justify-center gap-1.5 transition-all uppercase tracking-tighter active:scale-95 shadow-sm"><span class="material-symbols-outlined text-[14px] text-[#c9a044]">lock</span>LOCKED</button>`;
         } else if (isHeaderNoise) {
-          buttonHtml = `<button disabled class="w-full bg-slate-50 border border-slate-200 text-slate-400 text-[11px] font-bold py-1.5 rounded flex items-center justify-center transition-all uppercase tracking-tighter cursor-not-allowed">UNLOCKED</button>`;
+          buttonHtml = `<button disabled class="w-full bg-slate-50 border border-slate-200 text-slate-400 text-[11px] font-bold py-1.5 rounded flex items-center justify-center transition-all uppercase tracking-tighter cursor-not-allowed">LOCKED</button>`;
         } else if (reserveUrl && reserveUrl !== "") {
           buttonHtml = `<a href="${reserveUrl}" target="_blank" class="w-full bg-blue-50 border border-[#123b53]/40 hover:bg-[#123b53]/5 text-[#123b53] text-[11px] font-bold py-1.5 rounded flex items-center justify-center transition-all uppercase tracking-tighter active:scale-95 shadow-sm">予約する</a>`;
         }
