@@ -563,6 +563,7 @@
         // iPhone(iOS)かどうかを判定し、専用の文字サイズを設定
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const titleSizeClass = isIOS ? "text-[11px]" : "text-[13px]";
+        const infoSizeClass = isIOS ? "text-[8.5px]" : "text-[9.5px]"; 
         
         // グループ内の全公演データを取得
         const groupShows = shows.filter(s => s["公演名"] === title);
@@ -648,7 +649,7 @@
               ${visualHtml}
             </div>
             
-            <div class="relative z-10 space-y-0.5 text-[9.5px] uppercase tracking-wider mb-2 font-black flex-none">
+            <div class="relative z-10 space-y-0.5 ${infoSizeClass} uppercase tracking-wider mb-2 font-black flex-none">
               <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>定員:</span> <span class="text-[#123b53] font-black">${capacity}</span></div>
               <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${duration}分</span></div>
               ${priceHtml}
