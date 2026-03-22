@@ -564,12 +564,14 @@
         const titleSizeClass = isIOS ? "text-[11px]" : "text-[13px]";
         const infoSizeClass = isIOS ? "text-[8.5px]" : "text-[9.5px]"; 
         const cSize = isIOS ? "text-[7px]" : "text-[8px]";
+        const headerHeightClass = isIOS ? "h-[250px]" : "h-[230px]";
+        const currentHeaderOffset = isIOS ? 260 : 240;
         
         // グループ内の全公演データを取得
         const groupShows = shows.filter(s => s["公演名"] === title);
         const base = groupShows[0];
         const c = colors[index % colors.length];
-        const columnHeight = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR + HEADER_OFFSET;
+        const columnHeight = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR + currentHeaderOffset;
         
         let imageUrl = base["公演ビジュアルURL"] || base["画像URL"] || base["画像URL(無しでも可)"] || base.imageUrl;
         if (imageUrl && imageUrl.includes("drive.google.com/uc?export=view&id=")) {
@@ -641,7 +643,7 @@
 
         let colHtml = `
         <div class="venue-col border-r border-slate-100" style="height:${columnHeight}px" data-reservation="${reservationType}">
-          <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 h-[230px] flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left relative"> 
+          <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 ${headerHeightClass} flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left relative"> 
             ${headerNoiseLayer}
             <div class="relative z-10 flex gap-2 items-start mb-2">
               <div class="w-[80px] flex-none"> <div class="${cSize} font-black ${c.text} opacity-80 bg-white border ${c.border} px-1.5 py-0.5 rounded inline-block mb-1.5 tracking-widest leading-none break-words whitespace-pre-wrap">${circle}</div> ${titleHtml}
@@ -681,13 +683,13 @@
           let cardStyle = "";
           let timeDisplay = "";
           if (isFamilyStyle) {
-            const top = HEADER_OFFSET;
+            const top = currentHeaderOffset;
             const height = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR - 1;
             cardStyle = `top:${top}px; height:${height}px;`;
             timeDisplay = `随時受付<br><span class="opacity-70 text-[9px]">(${config.startHour}:00 - ${config.endHour}:00)</span>`;
           } else {
             const [h, m] = startStr.split(":").map(Number);
-            const top = ((h - config.startHour) * 60 + m) * (PIXELS_PER_HOUR / 60) + HEADER_OFFSET;
+            const top = ((h - config.startHour) * 60 + m) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
             const showDuration = show["所要時間(分)"] || show.duration || 0;
             const height = showDuration * (PIXELS_PER_HOUR / 60) - 1;
             cardStyle = `top:${top}px; height:${height}px;`;
