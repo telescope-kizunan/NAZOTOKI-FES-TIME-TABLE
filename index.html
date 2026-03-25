@@ -1577,54 +1577,73 @@
       }
 
       let lastPlanetariumUpdate = 0;
+      let smoothHeading = null; // センサー値の平滑化用
+      let smoothPitch = null;
+
       function handlePlanetarium(event) {
         if (!planetariumActive) return;
 
-        // 【新設】30FPSスロットル処理（33ms未満の細かすぎるセンサー更新の描画をスキップしてGPUを休ませる）
+        // 30FPSスロットル
         const now = Date.now();
         if (now - lastPlanetariumUpdate < 33) return;
         lastPlanetariumUpdate = now;
 
         let heading = event.webkitCompassHeading;
         if (heading == null && event.alpha != null) heading = 360 - event.alpha;
-        let pitch = event.beta; // -180 to 180 (90 is portrait vertical)
+        let pitch = event.beta;
 
         if (heading == null || pitch == null) {
           document.getElementById('planetarium-status').innerText = "センサー値を待機中...";
           return;
         }
 
-        const fov = 60; // 視野角 60度
+        // 【点滅修正の核心】ローパスフィルタでセンサーノイズを平滑化
+        // センサーは手がどんなに静止していても微振動する。この振動をそのまま描画に使うと点滅する。
+        // factor を 0.3 にすると「新しいセンサー値を30%だけ反映し、70%は前の値を維持する」穏やかな動きになる。
+        const factor = 0.3;
+        if (smoothHeading === null) {
+          smoothHeading = heading;
+          smoothPitch = pitch;
+        } else {
+          // heading は 0-360 で不連続のため、角度差の最短距離で補間する
+          let dH = heading - smoothHeading;
+          if (dH > 180) dH -= 360;
+          if (dH < -180) dH += 360;
+          smoothHeading = (smoothHeading + dH * factor + 360) % 360;
+          smoothPitch = smoothPitch + (pitch - smoothPitch) * factor;
+        }
+
+        const fov = 60;
         const pxPerDeg = window.innerWidth / fov;
         const skyElements = document.getElementById('planetarium-sky').children;
-        let isTargeted = false;
 
         for (let i = 0; i < skyElements.length; i++) {
           const el = skyElements[i];
           const sHeading = Number(el.dataset.heading);
           const sPitch = Number(el.dataset.pitch);
 
-          // 最短角度差の計算
-          let diffH = heading - sHeading;
+          let diffH = smoothHeading - sHeading;
           if (diffH > 180) diffH -= 360;
           if (diffH < -180) diffH += 360;
 
-          // 端末を右に回す（heading増加）と、星は左（-X方向）へ移動する
           const dx = -diffH * pxPerDeg;
 
-          // 端末を上に向ける（beta増加）と、星は下方向へ移動する
-          // （例: pitch=120(上向き)の時、星(90)との差は +30 -> 星は下に表示されるべき。dy > 0 は下方向。）
-          let diffP = pitch - sPitch;
+          let diffP = smoothPitch - sPitch;
           const dy = diffP * pxPerDeg;
 
-          // 画面に適用 (元の -translate-x-1/2 -translate-y-1/2 を維持しつつ移動)
           el.style.transform = `translate3d(calc(-50% + ${dx}px), calc(-50% + ${dy}px), 0)`;
 
-          // 中央からの距離に応じて透明度を調整（視界から外れたら消える）
+          // 【点滅修正の核心】opacityを5段階に量子化して、ミクロな変動では値が変わらないようにする
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const maxDist = window.innerWidth * 0.7; // 画面幅の70%くらいでフェードアウト
-          el.style.opacity = Math.max(0, 1 - (dist / maxDist));
+          const maxDist = window.innerWidth * 0.7;
+          const rawOpacity = Math.max(0, 1 - (dist / maxDist));
+          const steppedOpacity = Math.round(rawOpacity * 5) / 5; // 0, 0.2, 0.4, 0.6, 0.8, 1.0 の6段階
 
+          // 値が同じなら再代入しない（ブラウザに無駄な再描画トリガーを送らないため）
+          if (el._lastOpacity !== steppedOpacity) {
+            el.style.opacity = steppedOpacity;
+            el._lastOpacity = steppedOpacity;
+          }
         }
       }
 
