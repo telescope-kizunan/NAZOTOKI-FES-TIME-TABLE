@@ -381,8 +381,8 @@
       height: 150px;
       /* 光線の長さ */
 
-      /* ★変更：懐中電灯っぽさを消し、魔法/分析スキャンのようなオーラにする★ */
-      background: 
+      /* 分析スキャンのようなオーラにする */
+      background:
         linear-gradient(to top, transparent 0%, rgba(243, 227, 124, 0.15) 30%, rgba(243, 227, 124, 0.15) 70%, transparent 100%),
         repeating-linear-gradient(to top, transparent, transparent 3px, rgba(243, 227, 124, 0.1) 4px, rgba(243, 227, 124, 0.15) 5px);
       background-size: 100% 100%, 100% 20px;
@@ -415,6 +415,7 @@
       0% {
         background-position: 0 0, 0 20px;
       }
+
       100% {
         background-position: 0 0, 0 0;
       }
@@ -629,7 +630,7 @@
       <div id="password-prompt"
         class="absolute bottom-10 left-4 right-4 max-w-sm mx-auto hidden flex-col items-center z-30 p-4 bg-[#1a1c29]/60 backdrop-blur-md border border-[#f3e37c]/30 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)]">
         <div class="flex items-center gap-2 w-full">
-          <input type="text" id="secret-pass-input" placeholder="現実で見つけた合言葉"
+          <input type="text" id="secret-pass-input" placeholder="合言葉"
             class="flex-1 px-4 py-3 rounded-lg bg-[#0f0c29]/80 border border-[#f3e37c]/50 text-[#f3e37c] placeholder-[#f3e37c]/40 text-sm focus:outline-none focus:border-[#f3e37c] font-bold tracking-widest shadow-inner">
           <button onclick="checkPassword()"
             class="bg-gradient-to-br from-[#f3e37c] to-[#d4af37] text-[#0f0c29] px-6 py-3 rounded-lg font-black text-sm whitespace-nowrap active:scale-95 shadow-[0_0_15px_rgba(243,227,124,0.4)]">解錠</button>
