@@ -1523,8 +1523,9 @@
           if (isSecret) window.secretPassword = String(s["パスワード"]).trim();
 
           const el = document.createElement('div');
-          // translate3d で動的に配置するための中央固定のコンテナ
+          // translate3d で動的に配置するための中央固定のコンテナ。スマホGPUの点滅（フリッカー）防止のためbackface-visibilityを追加
           el.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center will-change-transform';
+          el.style.cssText = "-webkit-backface-visibility: hidden; backface-visibility: hidden;"; // 描画チラつき防止のおまじない
           el.id = 'p-star-' + idx;
           el.dataset.heading = Number(s["角度"]) || 0;
           el.dataset.pitch = pitchTarget;
@@ -1533,7 +1534,8 @@
           el.style.transition = 'opacity 0.2s linear'; // 位置はJSで直接更新するためトランジションは不透明度のみ
 
           // 星座風エフェクト：レトロポップなネオン発光
-          const filterStyle = "filter: brightness(0) invert(1) drop-shadow(0 0 15px #f3e37c) drop-shadow(0 0 5px #fff); opacity: 0.9; mix-blend-mode: screen;";
+          // 点滅の原因になりやすい mix-blend-mode を削除し、drop-shadow を1つに減らしてGPU負荷を軽量化
+          const filterStyle = "filter: brightness(0) invert(1) drop-shadow(0 0 10px #f3e37c); opacity: 0.95; transform: translateZ(0);";
           const visual = s["画像URL"]
             ? `<img src="${s["画像URL"]}" class="w-20 h-20 object-contain mx-auto" style="${filterStyle}">`
             : `<div class="w-4 h-4 bg-white/80 rounded-full shadow-[0_0_20px_#fff]"></div>`;
