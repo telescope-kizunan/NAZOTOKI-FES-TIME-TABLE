@@ -1533,11 +1533,14 @@
           el.style.opacity = '0';
           el.style.transition = 'opacity 0.2s linear'; // 位置はJSで直接更新するためトランジションは不透明度のみ
 
-          // 【デバッグ用】事象の切り分けのため、エフェクトや影、レイヤー合成を一切省いた「素の画像」のみにする
-          // これで点滅するなら、原因は「画像の読み込み自体（Google Drive等）」か「スマホ本体のtranslate描画バグ」に絞られます。
-          const filterStyle = "transform: translateZ(0);";
+          // 星座風エフェクト：レトロポップなネオン発光
+          // 実はエフェクトの重さではなく、Android 특有のセンサーバグが原因だと判明したため、超軽量グローを復元
+          const filterStyle = "filter: brightness(0) invert(1); opacity: 0.95; mix-blend-mode: screen; transform: translateZ(0);";
           const visual = s["画像URL"]
-            ? `<img src="${s["画像URL"]}" class="w-20 h-20 object-contain mx-auto" style="${filterStyle}">`
+            ? `<div class="relative w-20 h-20 flex items-center justify-center">
+                 <div class="absolute inset-0 bg-[#f3e37c] rounded-full blur-[15px] opacity-60 pointer-events-none transform translate-z-0"></div>
+                 <img src="${s["画像URL"]}" class="relative w-full h-full object-contain mx-auto" style="${filterStyle}">
+               </div>`
             : `<div class="w-4 h-4 bg-white/80 rounded-full shadow-[0_0_20px_#fff]"></div>`;
 
           const titleClass = isSecret ? "text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 animate-[pulse_1.5s_ease-in-out_infinite] font-[900]" : "text-[#f3e37c]";
@@ -1579,9 +1582,21 @@
       let currentHeading = null;
       let currentPitch = null;
       let planetariumAfc = null;
+      let useAbsolute = false; // Androidの座標ワープ防止フラグ
 
       function handlePlanetarium(event) {
         if (!planetariumActive) return;
+
+        // 【大元凶】AndroidのChromeは、deviceorientation と deviceorientationabsolute の両方を同時に連続発火させる。
+        // 片方は地球上の絶対方位(90度等)、もう片方は端末起動時の相対方位(0度等)を返すため、
+        // 星が毎フレームごとに180度ワープして「消えたり現れたりする（点滅＆ブレ）」地獄状態になっていた。
+        if (event.type === 'deviceorientationabsolute') {
+          useAbsolute = true;
+        }
+        // 絶対方位イベントが使えるAndroidなら、相対イベントは完全に無視する！
+        if (event.type === 'deviceorientation' && useAbsolute) {
+          return;
+        }
 
         let h = event.webkitCompassHeading;
         if (h == null && event.alpha != null) h = 360 - event.alpha;
