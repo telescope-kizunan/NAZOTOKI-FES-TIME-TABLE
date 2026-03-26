@@ -594,8 +594,8 @@
     <!-- イースターエッグ: 謎解き3Dプラネタリウム・モーダル -->
     <div id="planetarium-modal"
       class="fixed inset-0 z-[120] hidden bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white overflow-hidden font-serif">
-      <!-- レトロアニメ風ノイズ壁紙（最も重い原因となるmix-blendを削除し、不透明度のみに変えてGPU負荷を劇的に削減） -->
-      <div class="absolute inset-0 opacity-10 pointer-events-none"
+      <!-- レトロアニメ風ノイズ壁紙（最高画質の合成モードを復活！） -->
+      <div class="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
         style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E');">
       </div>
 
@@ -1533,14 +1533,10 @@
           el.style.opacity = '0';
           el.style.transition = 'opacity 0.2s linear'; // 位置はJSで直接更新するためトランジションは不透明度のみ
 
-          // 星座風エフェクト：レトロポップなネオン発光
-          // 実はエフェクトの重さではなく、Android 특有のセンサーバグが原因だと判明したため、超軽量グローを復元
-          const filterStyle = "filter: brightness(0) invert(1); opacity: 0.95; mix-blend-mode: screen; transform: translateZ(0);";
+          // 星座風エフェクト：レトロポップなネオン発光（最高画質エフェクトを完全復活！）
+          const filterStyle = "filter: brightness(0) invert(1) drop-shadow(0 0 15px #f3e37c) drop-shadow(0 0 5px #fff); opacity: 0.9; mix-blend-mode: screen; transform: translateZ(0);";
           const visual = s["画像URL"]
-            ? `<div class="relative w-20 h-20 flex items-center justify-center">
-                 <div class="absolute inset-0 bg-[#f3e37c] rounded-full blur-[15px] opacity-60 pointer-events-none transform translate-z-0"></div>
-                 <img src="${s["画像URL"]}" class="relative w-full h-full object-contain mx-auto" style="${filterStyle}">
-               </div>`
+            ? `<img src="${s["画像URL"]}" class="w-20 h-20 object-contain mx-auto" style="${filterStyle}">`
             : `<div class="w-4 h-4 bg-white/80 rounded-full shadow-[0_0_20px_#fff]"></div>`;
 
           const titleClass = isSecret ? "text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 animate-[pulse_1.5s_ease-in-out_infinite] font-[900]" : "text-[#f3e37c]";
