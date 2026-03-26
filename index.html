@@ -1576,17 +1576,8 @@
         window.addEventListener('deviceorientationabsolute', handlePlanetarium);
       }
 
-      let lastPlanetariumUpdate = 0;
-      let smoothHeading = null; // センサー値の平滑化用
-      let smoothPitch = null;
-
       function handlePlanetarium(event) {
         if (!planetariumActive) return;
-
-        // 30FPSスロットル
-        const now = Date.now();
-        if (now - lastPlanetariumUpdate < 33) return;
-        lastPlanetariumUpdate = now;
 
         let heading = event.webkitCompassHeading;
         if (heading == null && event.alpha != null) heading = 360 - event.alpha;
@@ -1595,22 +1586,6 @@
         if (heading == null || pitch == null) {
           document.getElementById('planetarium-status').innerText = "センサー値を待機中...";
           return;
-        }
-
-        // 【点滅修正の核心】ローパスフィルタでセンサーノイズを平滑化
-        // センサーは手がどんなに静止していても微振動する。この振動をそのまま描画に使うと点滅する。
-        // factor を 0.3 にすると「新しいセンサー値を30%だけ反映し、70%は前の値を維持する」穏やかな動きになる。
-        const factor = 0.3;
-        if (smoothHeading === null) {
-          smoothHeading = heading;
-          smoothPitch = pitch;
-        } else {
-          // heading は 0-360 で不連続のため、角度差の最短距離で補間する
-          let dH = heading - smoothHeading;
-          if (dH > 180) dH -= 360;
-          if (dH < -180) dH += 360;
-          smoothHeading = (smoothHeading + dH * factor + 360) % 360;
-          smoothPitch = smoothPitch + (pitch - smoothPitch) * factor;
         }
 
         const fov = 60;
@@ -1622,13 +1597,13 @@
           const sHeading = Number(el.dataset.heading);
           const sPitch = Number(el.dataset.pitch);
 
-          let diffH = smoothHeading - sHeading;
+          let diffH = heading - sHeading;
           if (diffH > 180) diffH -= 360;
           if (diffH < -180) diffH += 360;
 
           const dx = -diffH * pxPerDeg;
 
-          let diffP = smoothPitch - sPitch;
+          let diffP = pitch - sPitch;
           const dy = diffP * pxPerDeg;
 
           el.style.transform = `translate3d(calc(-50% + ${dx}px), calc(-50% + ${dy}px), 0)`;
