@@ -1576,48 +1576,72 @@
         window.addEventListener('deviceorientationabsolute', handlePlanetarium);
       }
 
+      let currentHeading = null;
+      let currentPitch = null;
+      let planetariumAfc = null;
+
       function handlePlanetarium(event) {
         if (!planetariumActive) return;
 
-        let heading = event.webkitCompassHeading;
-        if (heading == null && event.alpha != null) heading = 360 - event.alpha;
-        let pitch = event.beta;
+        let h = event.webkitCompassHeading;
+        if (h == null && event.alpha != null) h = 360 - event.alpha;
+        let p = event.beta;
 
-        if (heading == null || pitch == null) {
-          document.getElementById('planetarium-status').innerText = "センサー値を待機中...";
+        if (h == null || p == null) {
+          if (!currentHeading) document.getElementById('planetarium-status').innerText = "センサー値を待機中...";
           return;
         }
+
+        // センサーの「最新の数値」だけを変数に保存しておく（ここで画面は書き換えない！）
+        currentHeading = h;
+        currentPitch = p;
+
+        // もし「次回の画面更新の予約」がまだ入っていなければ、予約を入れる
+        if (!planetariumAfc) {
+          planetariumAfc = requestAnimationFrame(updatePlanetariumDOM);
+        }
+      }
+
+      function updatePlanetariumDOM() {
+        // 予約をリセットする（次回のセンサー反応時にまた予約できるようにする）
+        planetariumAfc = null;
+
+        if (currentHeading === null || currentPitch === null) return;
 
         const fov = 60;
         const pxPerDeg = window.innerWidth / fov;
         const skyElements = document.getElementById('planetarium-sky').children;
 
+        // DOMの効率的な書き換え処理
         for (let i = 0; i < skyElements.length; i++) {
           const el = skyElements[i];
           const sHeading = Number(el.dataset.heading);
           const sPitch = Number(el.dataset.pitch);
 
-          let diffH = heading - sHeading;
+          let diffH = currentHeading - sHeading;
           if (diffH > 180) diffH -= 360;
           if (diffH < -180) diffH += 360;
 
           const dx = -diffH * pxPerDeg;
 
-          let diffP = pitch - sPitch;
+          let diffP = currentPitch - sPitch;
           const dy = diffP * pxPerDeg;
 
+          // 最も軽い translate3d で位置を更新
           el.style.transform = `translate3d(calc(-50% + ${dx}px), calc(-50% + ${dy}px), 0)`;
 
-          // 【点滅修正の核心】opacityを5段階に量子化して、ミクロな変動では値が変わらないようにする
+          // opacity計算
           const dist = Math.sqrt(dx * dx + dy * dy);
           const maxDist = window.innerWidth * 0.7;
-          const rawOpacity = Math.max(0, 1 - (dist / maxDist));
-          const steppedOpacity = Math.round(rawOpacity * 5) / 5; // 0, 0.2, 0.4, 0.6, 0.8, 1.0 の6段階
+          let newOpacity = Math.max(0, 1 - (dist / maxDist));
+          
+          // なめらかにしつつ微小なノイズ計算を捨てるため、小数点第2位に丸める
+          newOpacity = Math.round(newOpacity * 100) / 100;
 
-          // 値が同じなら再代入しない（ブラウザに無駄な再描画トリガーを送らないため）
-          if (el._lastOpacity !== steppedOpacity) {
-            el.style.opacity = steppedOpacity;
-            el._lastOpacity = steppedOpacity;
+          // 実際の表示が変わるときだけCSSを更新する（ブラウザの計算を極限まで減らす超重要ポイント）
+          if (el._lastOpacity !== newOpacity) {
+            el.style.opacity = newOpacity;
+            el._lastOpacity = newOpacity;
           }
         }
       }
