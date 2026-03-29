@@ -147,9 +147,8 @@
     }
 
     .program-visual {
-      height: auto;
-      max-height: 110px;
-      /* height: autoにすることで、実際の比率に応じて高さも縮むため上下の余白が消える */
+      height: 110px;
+      /* width: autoにすることで、縦長・横長など各MV本来の比率に合わせて幅が個別調整 */
       width: auto;
       max-width: 85px;
       /* 異常に横長・正方形な画像が来た時のストッパー、全体の列幅を揃える役割 */
@@ -907,7 +906,7 @@
             if (isHeaderNoise) {
               visualHtml = `
               <div class="relative flex-shrink-0 program-visual border-0 bg-slate-50 p-0 w-auto h-auto shadow-none overflow-hidden rounded">
-                <img src="${imageUrl}" class="max-h-[110px] w-auto max-w-[85px] object-contain rounded mystic-blur saturate-50" alt="visual">
+                <img src="${imageUrl}" class="h-[110px] w-auto max-w-[140px] object-contain rounded mystic-blur saturate-50" alt="visual">
                 <div class="absolute inset-0 mystic-shimmer pointer-events-none"></div>
               </div>`;
             } else {
@@ -915,9 +914,9 @@
             }
           } else {
             if (isHeaderNoise) {
-              visualHtml = `<div class="program-visual h-[110px] relative flex items-center justify-center overflow-hidden w-20 bg-slate-50 border-slate-200 rounded"><div class="absolute inset-0 mystic-shimmer pointer-events-none"></div><span class="mystic-text relative z-10 px-1 text-[20px] font-serif">?</span></div>`;
+              visualHtml = `<div class="program-visual relative flex items-center justify-center overflow-hidden w-20 bg-slate-50 border-slate-200 rounded"><div class="absolute inset-0 mystic-shimmer pointer-events-none"></div><span class="mystic-text relative z-10 px-1 text-[20px] font-serif">?</span></div>`;
             } else {
-              visualHtml = `<div class="program-visual h-[110px] flex items-center justify-center text-[10px] text-slate-300 font-bold italic text-center leading-tight w-20">No Visual</div>`;
+              visualHtml = `<div class="program-visual flex items-center justify-center text-[10px] text-slate-300 font-bold italic text-center leading-tight w-20">No Visual</div>`;
             }
           }
 
