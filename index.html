@@ -519,7 +519,7 @@
         <div class="footer-front">
           <p class="text-[10px] font-black tracking-[0.3em] uppercase mb-2">Developed by</p>
           <p class="text-sm font-[900] text-[#123b53] tracking-tighter uppercase transition-all duration-1000"
-            id="footer-logo">テレスコープ@名古屋 謎の縁 実行委員会</p>
+            id="footer-logo">テレスコープ</p>
         </div>
         <!-- フリップ裏 -->
         <div class="footer-back">
@@ -645,26 +645,12 @@
     <!-- イースターエッグ: クリア画面（バーボンハウス） -->
     <div id="bourbon-modal"
       class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl text-white">
-      <div class="w-full max-w-sm p-8 text-center">
-        <div class="text-[#c9a044] mb-6 animate-pulse">
-          <span class="material-symbols-outlined text-6xl">local_bar</span>
-        </div>
-        <h2 class="font-serif text-2xl md:text-3xl mb-4 text-[#c9a044] tracking-wider leading-tight">Welcome
-          to<br>Bourbon House.</h2>
-        <div
-          class="text-sm text-slate-300 leading-relaxed font-serif text-left space-y-4 mb-10 border-l-2 border-[#c9a044]/50 pl-4">
-          <p>やぁ(´・ω・`)ようこそバーボンハウスへ。<br>この謎解きはサービスだから、まず解いて落ち着いて欲しい。</p>
-          <p>うん、「深夜の秘密の公演」なんてないんだ。済まない。<br>仏の顔もって言うしね、謝って許してもらおうとも思っていない。</p>
-          <p>でも、この公演を見つけた時、君は、きっと言葉では言い表せない「ときめき」みたいなものを感じてくれたと思う。</p>
-          <p>殺伐とした世の中で、そういう気持ちを忘れないでほしい。</p>
-          <p>そう思って、この謎解きを作ったんだ。</p>
-          <p>といってもせっかくここまで解き明かしてくれたんだ。そんな謎に熱心な君に、ささやかな報酬を用意しているよ。</p>
-          <p class="text-[#c9a044] font-bold">会場にいる私を見つけて「見つけたよ」って声をかけてね。</p>
-          <p class="text-[#c9a044] font-bold">私が誰か知らない？大丈夫、ちゃんと見つける方法は用意してあるよ。</p>
-          <p class="text-[#c9a044] font-bold">もしわからなかったら「テレスコープはどこにいますか？」って誰かに聞いてみるのもOKだよ！</p>
-        </div>
-        <button onclick="document.getElementById('bourbon-modal').classList.add('hidden')"
-          class="w-full border border-[#c9a044] text-[#c9a044] py-3 rounded-xl font-black text-[11px] hover:bg-[#c9a044] hover:text-black transition-all">日常に戻る</button>
+      <div id="bourbon-content" class="w-full max-w-sm p-8 text-center hidden">
+        <!-- サーバー(GAS)から正解時のみここにメッセージが注入される（ソースコードカンニング防止） -->
+      </div>
+      <div id="bourbon-loading" class="text-[#c9a044] animate-pulse font-serif hidden flex flex-col items-center">
+        <span class="material-symbols-outlined text-4xl mb-2 block animate-spin">hourglass_empty</span>
+        <p class="text-sm tracking-widest uppercase">Checking Password...</p>
       </div>
     </div>
 
@@ -1657,19 +1643,49 @@
         }
       }
 
-      function checkPassword() {
+      async function checkPassword() {
         const input = document.getElementById('secret-pass-input').value.trim();
         if (!input) return;
 
-        if (input === window.secretPassword) {
-          planetariumActive = false;
-          window.removeEventListener('deviceorientation', handlePlanetarium);
-          window.removeEventListener('deviceorientationabsolute', handlePlanetarium);
+        // スキャン・センサーを停止し、ローディング画面へ
+        planetariumActive = false;
+        window.removeEventListener('deviceorientation', handlePlanetarium);
+        window.removeEventListener('deviceorientationabsolute', handlePlanetarium);
+        
+        document.getElementById('planetarium-modal').classList.add('hidden');
+        document.getElementById('bourbon-modal').classList.remove('hidden');
+        document.getElementById('bourbon-content').classList.add('hidden');
+        document.getElementById('bourbon-loading').classList.remove('hidden');
 
-          document.getElementById('planetarium-modal').classList.add('hidden');
-          document.getElementById('bourbon-modal').classList.remove('hidden');
-        } else {
-          alert("エラー: 合言葉が一致しません。");
+        try {
+          // サーバー（GAS）にパスワードを送信して答え合わせ
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'checkPassword', password: input })
+          });
+          const result = await response.json();
+          document.getElementById('bourbon-loading').classList.add('hidden');
+
+          if (result.status === 'success') {
+            // パスワード正解時：サーバーから送られてきたご褒美画面のHTMLを注入
+            document.getElementById('bourbon-content').innerHTML = result.html;
+            document.getElementById('bourbon-content').classList.remove('hidden');
+          } else {
+            // パスワード間違い：元の星空に戻す
+            alert("エラー: 合言葉が一致しません。もう一度星空を探してみてください！");
+            document.getElementById('bourbon-modal').classList.add('hidden');
+            document.getElementById('planetarium-modal').classList.remove('hidden');
+            planetariumActive = true;
+            window.addEventListener('deviceorientation', handlePlanetarium);
+            window.addEventListener('deviceorientationabsolute', handlePlanetarium);
+          }
+        } catch (e) {
+          alert("通信エラーが発生しました。電波の良い場所で再度お試しください。");
+          document.getElementById('bourbon-modal').classList.add('hidden');
+          document.getElementById('planetarium-modal').classList.remove('hidden');
+          planetariumActive = true;
+          window.addEventListener('deviceorientation', handlePlanetarium);
+          window.addEventListener('deviceorientationabsolute', handlePlanetarium);
         }
       }
     </script>
