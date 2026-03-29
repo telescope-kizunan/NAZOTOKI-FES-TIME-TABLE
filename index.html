@@ -896,6 +896,9 @@
 
           const capacity = base["定員"] || "-";
           const duration = base["所要時間(分)"] || base.duration || "0";
+          const priorityDurationText = base["所要時間:優先表示テキスト"] || "";
+          const durationDisplay = priorityDurationText !== "" ? String(priorityDurationText).replace(/\n/g, '<br>') : `${duration}分`;
+
           const circle = base["団体名"] || base["サークル名"] || "不明";
           const reserveUrl = base["予約URL"] || base.url;
           const reservationType = base["予約形式"] || "事前予約";
@@ -963,7 +966,7 @@
             
             <div class="relative z-10 space-y-0.5 ${infoSizeClass} uppercase tracking-wider mb-2 font-black flex-none">
               <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>定員:</span> <span class="text-[#123b53] font-black">${capacity}</span></div>
-              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${duration}分</span></div>
+              <div class="flex items-center gap-1.5 text-slate-400 font-medium"><span>所要:</span> <span class="text-[#123b53] font-black">${durationDisplay}</span></div>
               ${priceHtml}
             </div>
             
@@ -992,6 +995,8 @@
 
             let cardStyle = "";
             let timeDisplay = "";
+            let phaseBlockHtml = "";
+
             if (isFamilyStyle) {
               const top = currentHeaderOffset;
               const height = (config.endHour - config.startHour + 1) * PIXELS_PER_HOUR - 1;
@@ -1001,8 +1006,50 @@
               const [h, m] = startStr.split(":").map(Number);
               const top = ((h - config.startHour) * 60 + m) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
               const showDuration = show["所要時間(分)"] || show.duration || 0;
-              const height = showDuration * (PIXELS_PER_HOUR / 60) - 1;
-              cardStyle = `top:${top}px; height:${height}px;`;
+              
+              let endT_min = (h * 60) + m + Number(showDuration);
+
+              const pAcceptEnd = show["受付終了時間"] || "";
+              let acceptEndMin = null;
+              if (pAcceptEnd.includes(":")) {
+                const [ah, am] = pAcceptEnd.split(":").map(Number);
+                acceptEndMin = (ah * 60) + am;
+              }
+
+              const pTotalEnd = show["完全終了時間"] || "";
+              let totalEndMin = null;
+              if (pTotalEnd.includes(":")) {
+                const [th, tm] = pTotalEnd.split(":").map(Number);
+                totalEndMin = (th * 60) + tm;
+              }
+
+              if (totalEndMin !== null && acceptEndMin !== null) {
+                if (totalEndMin <= acceptEndMin) {
+                   endT_min = Math.max(totalEndMin, acceptEndMin);
+                } else {
+                   endT_min = totalEndMin;
+                   const phaseHeight = (totalEndMin - acceptEndMin) * (PIXELS_PER_HOUR / 60) - 1;
+                   if (phaseHeight > 0) {
+                     const rawPhaseName = show["最終フェーズ表示名"] || "受付終了";
+                     const phaseName = String(rawPhaseName).replace(/\n/g, '<br>');
+                     phaseBlockHtml = `
+                       <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center p-1 rounded-b-xl backdrop-blur-sm" style="height:${phaseHeight}px; background-color: rgba(0,0,0, 0.15); border-top: 1px dashed rgba(255,255,255,0.3);">
+                         <span class="text-[10px] font-bold text-slate-700/90 leading-tight text-center">${phaseName}</span>
+                       </div>
+                     `;
+                     // 追加ブロック分だけパディングを足して中央揃えのテキストが下にズレないようにする
+                     cardStyle += `padding-bottom: ${phaseHeight + 16}px; `;
+                   }
+                }
+              } else if (totalEndMin !== null) {
+                endT_min = totalEndMin;
+              } else if (acceptEndMin !== null) {
+                endT_min = acceptEndMin;
+              }
+
+              const height = Math.max(0, (endT_min - ((h * 60) + m)) * (PIXELS_PER_HOUR / 60) - 1);
+              cardStyle += `top:${top}px; height:${height}px;`;
+
               const endStr = show.endTime || show.end || "";
               timeDisplay = `${startStr} - ${endStr}`;
             }
@@ -1028,6 +1075,7 @@
             ${cardLockBadge}
             <div class="font-black text-[11px] text-center leading-tight z-10 ${textNoiseClass}">${timeDisplay}</div>
             ${currentShowCount > 0 ? `<div class="absolute -top-2 -right-2 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse z-20 tooltip-trigger" title="${currentShowCount}人がハシゴ予定！"><span class="material-symbols-outlined text-[10px]">mode_heat</span></div>` : ''}
+            ${phaseBlockHtml}
           </div>`;
           });
 
