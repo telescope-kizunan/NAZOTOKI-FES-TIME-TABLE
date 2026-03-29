@@ -757,7 +757,8 @@
 
         const cols = document.querySelectorAll('.venue-col');
         cols.forEach(col => {
-          if (type === 'ALL' || col.dataset.reservation === type) {
+          const resType = col.dataset.reservation || "";
+          if (type === 'ALL' || resType === type || resType.startsWith(type)) {
             col.style.display = '';
           } else {
             col.style.display = 'none';
@@ -1122,13 +1123,13 @@
           const s1 = showsMap.get(id1);
           const card1 = document.getElementById(`card-${id1}`);
           if (card1) card1.classList.remove('conflict');
-          if (!s1 || (s1["予約形式"] || "") === "当日受付(ファミレス式)") return;
+          if (!s1 || (s1["予約形式"] || "") === "当日受付(ファミレス式)" || (s1["予約形式"] || "") === "事前予約(時間自由)") return;
           const start1 = timeToMinutes(s1["開始時間(hh:mm)"] || s1.start);
           const end1 = timeToMinutes(s1.endTime || s1.end);
           selectedIds.forEach((id2, j) => {
             if (i >= j) return;
             const s2 = showsMap.get(id2);
-            if (!s2 || (s2["予約形式"] || "") === "当日受付(ファミレス式)") return;
+            if (!s2 || (s2["予約形式"] || "") === "当日受付(ファミレス式)" || (s2["予約形式"] || "") === "事前予約(時間自由)") return;
             const start2 = timeToMinutes(s2["開始時間(hh:mm)"] || s2.start);
             const end2 = timeToMinutes(s2.endTime || s2.end);
             if ((start1 <= end2 && end1 >= start2) || (start2 <= end1 && end2 >= start1)) {
@@ -1213,7 +1214,9 @@
         });
         let overlap = false;
         for (let i = 0; i < sel.length - 1; i++) {
-          if ((sel[i]["予約形式"] || "") === "当日受付(ファミレス式)" || (sel[i + 1]["予約形式"] || "") === "当日受付(ファミレス式)") continue;
+          const t1 = sel[i]["予約形式"] || "";
+          const t2 = sel[i + 1]["予約形式"] || "";
+          if (t1 === "当日受付(ファミレス式)" || t1 === "事前予約(時間自由)" || t2 === "当日受付(ファミレス式)" || t2 === "事前予約(時間自由)") continue;
           const end1 = timeToMinutes(sel[i].endTime || sel[i].end);
           const start2 = timeToMinutes(sel[i + 1]["開始時間(hh:mm)"] || sel[i + 1].start);
           if (end1 >= start2) overlap = true;
