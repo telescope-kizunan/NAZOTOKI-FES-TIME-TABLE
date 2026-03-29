@@ -861,11 +861,11 @@
         grid.innerHTML = '';
         // 団体ごとのテーマカラー定義(好きな色にしていい)
         const colors = [
-          { text: "text-blue-800", bg: "bg-blue-100", border: "border-blue-200", accent: "text-blue-500" },
-          { text: "text-indigo-800", bg: "bg-indigo-100", border: "border-indigo-200", accent: "text-indigo-500" },
-          { text: "text-emerald-800", bg: "bg-emerald-100", border: "border-emerald-200", accent: "text-emerald-500" },
-          { text: "text-orange-800", bg: "bg-orange-100", border: "border-orange-200", accent: "text-orange-500" },
-          { text: "text-pink-800", bg: "bg-pink-100", border: "border-pink-200", accent: "text-pink-500" }
+          { text: "text-blue-800", bg: "bg-blue-100", border: "border-blue-200", accent: "text-blue-500", phaseBg: "bg-blue-300", phaseText: "text-blue-900" },
+          { text: "text-indigo-800", bg: "bg-indigo-100", border: "border-indigo-200", accent: "text-indigo-500", phaseBg: "bg-indigo-300", phaseText: "text-indigo-900" },
+          { text: "text-emerald-800", bg: "bg-emerald-100", border: "border-emerald-200", accent: "text-emerald-500", phaseBg: "bg-emerald-300", phaseText: "text-emerald-900" },
+          { text: "text-orange-800", bg: "bg-orange-100", border: "border-orange-200", accent: "text-orange-500", phaseBg: "bg-orange-300", phaseText: "text-orange-900" },
+          { text: "text-pink-800", bg: "bg-pink-100", border: "border-pink-200", accent: "text-pink-500", phaseBg: "bg-pink-300", phaseText: "text-pink-900" }
         ];
 
         titles.forEach((title, index) => {
@@ -1031,8 +1031,8 @@
                    const rawPhaseName = show["最終フェーズ表示名"] || "受付終了";
                    const phaseName = String(rawPhaseName).replace(/\n/g, '<br>');
                    phaseBlockHtml = `
-                     <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center p-1 backdrop-blur-sm" style="height:${phaseHeight}px; background-color: rgba(0,0,0, 0.15); border-top: 1px dashed rgba(255,255,255,0.3);">
-                       <span class="text-[10px] font-bold text-slate-700/90 leading-tight text-center">${phaseName}</span>
+                     <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center p-1 ${c.phaseBg} border-t border-dashed border-white/60" style="height:${phaseHeight}px;">
+                       <span class="text-[10px] font-black ${c.phaseText} leading-tight text-center drop-shadow-sm">${phaseName}</span>
                      </div>
                    `;
                    // 追加ブロック分だけパディングを足して中央揃えのテキストが下にズレないようにする
