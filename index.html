@@ -991,6 +991,7 @@
 
             // 行（時間枠）ごとの個別の設定を読み込む
             const isCardNoise = show["ノイズ演出"] === true || show["ノイズ演出"] === "TRUE" || show["ノイズ演出"] === "あり";
+            const isCardLock = (show["南京錠パスワード"] || "") !== "";
             const [h, m] = (startStr && startStr.includes(":")) ? startStr.split(":").map(Number) : [config.startHour, 0];
             const top = ((h - config.startHour) * 60 + m) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
 
