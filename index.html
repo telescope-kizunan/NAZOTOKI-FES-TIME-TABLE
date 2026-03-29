@@ -1031,7 +1031,7 @@
                    const rawPhaseName = show["最終フェーズ表示名"] || "受付終了";
                    const phaseName = String(rawPhaseName).replace(/\n/g, '<br>');
                    phaseBlockHtml = `
-                     <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center p-1 rounded-b-xl backdrop-blur-sm" style="height:${phaseHeight}px; background-color: rgba(0,0,0, 0.15); border-top: 1px dashed rgba(255,255,255,0.3);">
+                     <div class="absolute bottom-0 left-0 right-0 flex items-center justify-center p-1 backdrop-blur-sm" style="height:${phaseHeight}px; background-color: rgba(0,0,0, 0.15); border-top: 1px dashed rgba(255,255,255,0.3);">
                        <span class="text-[10px] font-bold text-slate-700/90 leading-tight text-center">${phaseName}</span>
                      </div>
                    `;
