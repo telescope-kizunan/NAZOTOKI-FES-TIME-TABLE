@@ -1353,7 +1353,7 @@
       }
 
       // ============================================================
-      // --- イースターエッグ (Developed by テレスコープ 長押し検知) ---
+      // --- イースターエッグ---
       // ============================================================
       let eggTimer = null;
       let eggTriggered = false;
@@ -1361,12 +1361,13 @@
       const footerEl = document.getElementById('dev-footer');
       if (footerEl) {
         const startEgg = (e) => {
+          return; //オフ設定()
           if (eggTriggered) return;
           e.preventDefault(); // スクロールリセット防止
           document.getElementById('footer-logo').classList.add('text-[#c9a044]', 'scale-110');
           eggTimer = setTimeout(() => {
             activateEasterEgg();
-          }, 5000); // 5秒長押し
+          }, 5000); 
         };
         const cancelEgg = (e) => {
           if (eggTimer) clearTimeout(eggTimer);
