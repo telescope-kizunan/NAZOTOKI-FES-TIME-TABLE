@@ -148,7 +148,7 @@
 
     .program-visual {
       height: 110px;
-      /* width: autoにすることで、縦長・横長など各MV本来の比率に合わせて幅が個別調整 */
+      /* width: 各MV本来の比率に合わせて幅が個別調整 */
       width: auto;
       max-width: 85px;
       /* 異常に横長・正方形な画像が来た時のストッパー、全体の列幅を揃える役割 */
@@ -265,7 +265,7 @@
       }
     }
 
-    /* --- イースターエッグ演出用 CSS --- */
+    /* --- 演出用 CSS --- */
     body.night-sky-mode {
       background: #0a0f1c !important;
       color: #e2e8f0;
@@ -312,7 +312,7 @@
       opacity: 0.8;
     }
 
-    /* フッターのフリップコンテナと光線 */
+    /* フッターのフリップコンテナ */
     #dev-footer {
       perspective: 1000px;
     }
@@ -321,7 +321,6 @@
       position: relative;
       width: 100%;
       height: 80px;
-      /* 回転領域の高さを固定 */
       transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
       transform-style: preserve-3d;
       margin-top: 5px;
@@ -330,7 +329,6 @@
     .footer-flip-inner.is-flipped {
       transform: rotateY(180deg);
       pointer-events: none;
-      /* 回転後の裏面はクリック無効化で安全確保 */
     }
 
     .footer-front,
@@ -351,37 +349,34 @@
       transform: rotateY(180deg);
     }
 
-    /* 覗き込む巨大な光線の演出（視界・スキャンオーラ） */
     .telescope-ray {
       position: absolute;
 
-      /* ① 起点（光線が出る根元）の調整 */
+      /* エフェクトの調整 */
       /* bottom の数値を大きくすると上へ、left を大きくすると右へ移動します */
       bottom: calc(50% + 40px);
       left: calc(50% + 50px);
 
       transform-origin: bottom center;
 
-      /* ② 角度の調整 */
+      /* 角度の調整 */
       /* 65deg を小さくすると上向きに、大きくすると右向き */
       transform: rotate(65deg);
 
-      /* ③ 太さと長さの調整 */
+      /* 太さと長さの調整 */
       width: 100px;
       /* 先端の広がり幅 */
       margin-left: -50px;
       /* 【重要】常に width の半分のマイナス値に */
       height: 150px;
-      /* 光線の長さ */
 
 
-      /* 分析スキャンのようなオーラにする */
       background:
         linear-gradient(to top, transparent 0%, rgba(243, 227, 124, 0.15) 30%, rgba(243, 227, 124, 0.15) 70%, transparent 100%),
         repeating-linear-gradient(to top, transparent, transparent 3px, rgba(243, 227, 124, 0.1) 4px, rgba(243, 227, 124, 0.15) 5px);
       background-size: 100% 100%, 100% 20px;
 
-      /* ④ 広がり方（角度）の調整 */
+      /*広がり方（角度）の調整 */
       /* 25% と 75% の数字をいじると広がりの角度が変化 */
       clip-path: polygon(25% 0, 75% 0, 51% 100%, 49% 100%);
 
@@ -395,13 +390,11 @@
 
     .footer-flip-inner.is-flipped .telescope-ray {
       opacity: 0;
-      /* フリップだけでは光線は出さない */
     }
 
     .telescope-ray.ray-active {
       opacity: 1 !important;
       transition: opacity 0.8s ease-in-out !important;
-      /* うっすらとシマシマ模様が上に向かって流れ続け、空間を覗き/スキャンしていることを表現 */
       animation: mystic-scan 1.5s linear infinite;
     }
 
@@ -517,7 +510,7 @@
           <p class="text-sm font-[900] text-[#123b53] tracking-tighter uppercase transition-all duration-1000"
             id="footer-logo">名古屋 謎の縁　実行委員会</p>
         </div>
-        <!-- フリップ裏 -->
+        <!-- 裏 -->
         <div class="footer-back">
           <img id="telescope-icon" src="./望遠鏡.png" alt="テレスコープ"
             class="w-[110px] h-auto drop-shadow-[0_0_15px_#f3e37c] relative z-20">
@@ -587,7 +580,7 @@
       </div>
     </div>
 
-    <!-- イースターエッグ: プラネタリウム -->
+    <!-- プラネタリウム -->
     <div id="planetarium-modal"
       class="fixed inset-0 z-[120] hidden bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white overflow-hidden font-serif">
       <div class="absolute inset-0 pointer-events-none opacity-80"
@@ -598,7 +591,6 @@
       </div>
 
       <div id="planetarium-sky" class="absolute inset-0 w-full h-full pointer-events-none">
-        <!-- Stars will be injected here -->
       </div>
 
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -623,7 +615,7 @@
       <button onclick="document.getElementById('planetarium-modal').classList.add('hidden')"
         class="absolute top-4 right-4 text-white/50 hover:text-[#f3e37c] p-4 text-3xl font-light z-20 transition-colors">&times;</button>
 
-      <!-- パスワード入力エリア -->
+      <!-- パスワード入力処理 -->
       <div id="password-prompt"
         class="absolute bottom-10 left-4 right-4 max-w-sm mx-auto hidden flex-col items-center z-30 p-4 bg-[#1a1c29]/60 backdrop-blur-md border border-[#f3e37c]/30 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)]">
         <div class="flex items-center gap-2 w-full">
@@ -635,7 +627,6 @@
       </div>
     </div>
 
-    <!-- イースターエッグ: クリア画面 -->
     <div id="bourbon-modal"
       class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl text-white">
       <div id="bourbon-content" class="w-full max-w-sm p-8 text-center hidden">
@@ -1255,7 +1246,7 @@
       }
 
       function closeModal() { document.getElementById('my-schedule-modal').classList.add('hidden'); }
-      // --- ① 画像保存処理 ---
+      // --- 画像保存処理 ---
       async function downloadScheduleImage() {
         const btn = document.getElementById('download-btn');
         const area = document.getElementById('capture-area');
@@ -1277,11 +1268,11 @@
           const dataUrl = await htmlToImage.toPng(area, {
             quality: 1.0,
             pixelRatio: 3,
-            cacheBust: true, // キャッシュを無視して、ライブラリに確実に再取得させる
-            height: targetHeight, // キャンバス自体を本当の高さまで広げる
+            cacheBust: true, 
+            height: targetHeight, 
             style: {
               overflow: 'visible',
-              maxHeight: 'none',  // 画面上の高さ制限(95vh等)を無視させる
+              maxHeight: 'none',  
               height: targetHeight + 'px',
               borderRadius: '2.5rem'
             }
@@ -1299,7 +1290,7 @@
         }
       }
 
-      // --- ② SNS投稿処理 ---
+      // --- SNS投稿処理 ---
       async function shareScheduleImage() {
         const btn = document.getElementById('share-btn');
         const area = document.getElementById('capture-area');
@@ -1353,7 +1344,7 @@
       }
 
       // ============================================================
-      // --- イースターエッグ---
+      // --- egg---
       // ============================================================
       let eggTimer = null;
       let eggTriggered = false;
@@ -1361,7 +1352,7 @@
       const footerEl = document.getElementById('dev-footer');
       if (footerEl) {
         const startEgg = (e) => {
-          return; //オフ設定()
+          return; //オフ設定(この行のONOFFで対応)
           if (eggTriggered) return;
           e.preventDefault(); // スクロールリセット防止
           document.getElementById('footer-logo').classList.add('text-[#c9a044]', 'scale-110');
@@ -1380,7 +1371,6 @@
         footerEl.addEventListener('mousedown', startEgg);
         footerEl.addEventListener('mouseup', cancelEgg);
         footerEl.addEventListener('mouseleave', cancelEgg);
-        // コンテキストメニュー（長押しメニュー）も無効化
         footerEl.addEventListener('contextmenu', (e) => e.preventDefault());
         footerEl.style.userSelect = 'none';
         footerEl.style.webkitTouchCallout = 'none';
@@ -1398,27 +1388,27 @@
         if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
 
         // ====================================================
-        // STEP 2 & 3: フリップ + 夜空モードへ同時切り替え（光線は出さない）
+        // 夜空モードへ切り替え
         // ====================================================
         document.body.classList.add('night-sky-mode');
         const flipEl = document.getElementById('footer-flip-inner');
         if (flipEl) flipEl.classList.add('is-flipped');
 
-        // スクロール位置の復元（DOMの変化でブラウザが勝手に動くのを防ぐ）
+        // スクロール位置の復元）
         requestAnimationFrame(() => {
           window.scrollTo(0, savedScrollY);
           if (container) container.scrollLeft = savedScrollLeft;
         });
 
         // ====================================================
-        // STEP 4: 時間軸拡張 + Secret列を中間に挿入（1.8秒後）
+        // Secret
         // ====================================================
         setTimeout(() => {
           // スクロール位置を再度復元
           window.scrollTo(0, savedScrollY);
           if (container) container.scrollLeft = savedScrollLeft;
 
-          // 時間軸の拡張（21:00 ～ 25:00 を追加）
+          // 時間軸の拡張
           const axis = document.getElementById('time-axis');
           const extStart = config.endHour + 1;
           const extEnd = 25;
@@ -1435,11 +1425,10 @@
           const newHeight = (extEnd - config.startHour + 1) * PIXELS_PER_HOUR + currentHeaderOffset;
           cols.forEach(col => { col.style.height = `${newHeight}px`; });
 
-          // --- Secret列を列の真ん中あたりに挿入 ---
           const grid = document.getElementById('timetable-grid');
           const existingCols = grid.querySelectorAll('.venue-col');
-          const insertIndex = Math.floor(existingCols.length / 2); // ど真ん中
-          const refCol = existingCols[insertIndex]; // この列の前に挿入
+          const insertIndex = Math.floor(existingCols.length / 2); 
+          const refCol = existingCols[insertIndex];
 
           const secretCol = document.createElement('div');
           secretCol.id = 'secret-venue-col';
@@ -1447,7 +1436,7 @@
           secretCol.style.height = `${newHeight}px`;
           secretCol.dataset.reservation = '事前予約';
 
-          // Secret列のヘッダー（不気味な謎の団体）
+          // Secretヘッダー
           const headerH = isIOS ? 'h-[245px]' : 'h-[230px]';
           let secretColHtml = `
             <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 ${headerH} flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left relative">
@@ -1477,23 +1466,14 @@
           secretCol.innerHTML = secretColHtml;
           grid.insertBefore(secretCol, refCol);
 
-          // ====================================================
-          // STEP 5: シークレット列が画面中央にくるよう自動スクロール（0.3秒後）
-          // ====================================================
+
           setTimeout(() => {
-            // まず縦スクロールで一番下（深夜枠）を見せる
             secretCol.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'center' });
 
-            // ====================================================
-            // STEP 6: 光線が0.5秒かけて発射される（スクロール完了見込みの1.5秒後）
-            // ====================================================
             setTimeout(() => {
               const ray = document.querySelector('.telescope-ray');
               if (ray) ray.classList.add('ray-active');
 
-              // ====================================================
-              // STEP 7: 光線が出終わった後、シークレット公演カードが出現（0.8秒後）
-              // ====================================================
               setTimeout(() => {
                 const secretTop = ((24 - config.startHour) * 60 + 30) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
                 const secretHeight = 60 * (PIXELS_PER_HOUR / 60) - 1;
@@ -1516,7 +1496,7 @@
                 };
                 secretCol.appendChild(secretCard);
 
-                // カード出現アニメーション（フワッと登場）
+                // カード出現アニメーション
                 requestAnimationFrame(() => {
                   requestAnimationFrame(() => {
                     secretCard.style.transition = 'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
@@ -1525,19 +1505,18 @@
                   });
                 });
 
-                // カード出現後にもう一度位置を合わせる
                 setTimeout(() => {
                   secretCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
                 }, 300);
 
-              }, 800); // STEP7: 光線の後0.8秒
-            }, 1500);   // STEP6: スクロール完了待ち1.5秒
-          }, 300);      // STEP5: 列挿入後0.3秒で横スクロール開始
-        }, 1800);       // STEP4: フリップ完了待ち1.8秒
+              }, 800); 
+            }, 1500);  
+          }, 300); 
+        }, 1800); 
       }
 
       // ============================================================
-      // --- イースターエッグ 3Dプラネタリウム宝の地図 処理 ---
+      // --- プラネタリウム処理 ---
       // ============================================================
       let planetariumActive = false;
       let planetariumTimer = null;
@@ -1546,14 +1525,8 @@
         const btn = document.getElementById('planetarium-start-btn');
         const status = document.getElementById('planetarium-status');
         const sky = document.getElementById('planetarium-sky');
-
-        // データ準備（スプレッドシートデータがなければダミーデータを使用）
-        const starsData = window.easterEggData || [
-          { "団体名": "テスト下層", "階層": "下層", "角度": 0 },
-          { "団体名": "テスト中層東", "階層": "中層", "角度": 90 },
-          { "団体名": "テスト上層南", "階層": "上層", "角度": 180 },
-          { "団体名": "秘密の部屋", "階層": "中層", "角度": 270, "パスワード": "バーボン" }
-        ];
+        // データ準備（スプレッドシートから取得）
+        const starsData = window.easterEggData || [];
 
         sky.innerHTML = '';
 
@@ -1565,17 +1538,16 @@
           const isSecret = (s["パスワード"] && String(s["パスワード"]).trim() !== "");
 
           const el = document.createElement('div');
-          // translate3d で動的に配置するための中央固定のコンテナ。スマホGPUの点滅（フリッカー）防止のためbackface-visibilityを追加
           el.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center will-change-transform';
-          el.style.cssText = "-webkit-backface-visibility: hidden; backface-visibility: hidden;"; // 描画チラつき防止のおまじない
+          el.style.cssText = "-webkit-backface-visibility: hidden; backface-visibility: hidden;"; 
           el.id = 'p-star-' + idx;
           el.dataset.heading = Number(s["角度"]) || 0;
           el.dataset.pitch = pitchTarget;
           el.dataset.secret = isSecret ? "1" : "0";
           el.style.opacity = '0';
-          el.style.transition = 'opacity 0.2s linear'; // 位置はJSで直接更新するためトランジションは不透明度のみ
+          el.style.transition = 'opacity 0.2s linear'; 
 
-          // 星座風エフェクト：レトロポップなネオン発光（最高画質エフェクトを完全復活！）
+          // 星座風エフェクト
           const filterStyle = "filter: brightness(0) invert(1) drop-shadow(0 0 15px #f3e37c) drop-shadow(0 0 5px #fff); opacity: 0.9; mix-blend-mode: screen; transform: translateZ(0);";
           const visual = s["画像URL"]
             ? `<img src="${s["画像URL"]}" class="w-16 h-16 md:w-20 md:h-20 object-contain mx-auto" style="${filterStyle}">`
@@ -1606,7 +1578,7 @@
         btn.classList.add('hidden');
         document.getElementById('planetarium-title').classList.remove('hidden');
         document.getElementById('password-prompt').classList.remove('hidden');
-        document.getElementById('password-prompt').classList.add('flex'); // hiddenを外してflexにする
+        document.getElementById('password-prompt').classList.add('flex'); 
 
         planetariumActive = true;
         window.addEventListener('deviceorientation', handlePlanetarium);
@@ -1616,18 +1588,14 @@
       let currentHeading = null;
       let currentPitch = null;
       let planetariumAfc = null;
-      let useAbsolute = false; // Androidの座標ワープ防止フラグ
+      let useAbsolute = false; 
 
       function handlePlanetarium(event) {
         if (!planetariumActive) return;
 
-        // 【大元凶】AndroidのChromeは、deviceorientation と deviceorientationabsolute の両方を同時に連続発火させる。
-        // 片方は地球上の絶対方位(90度等)、もう片方は端末起動時の相対方位(0度等)を返すため、
-        // 星が毎フレームごとに180度ワープして「消えたり現れたりする（点滅＆ブレ）」地獄状態になっていた。
         if (event.type === 'deviceorientationabsolute') {
           useAbsolute = true;
         }
-        // 絶対方位イベントが使えるAndroidなら、相対イベントは完全に無視する！
         if (event.type === 'deviceorientation' && useAbsolute) {
           return;
         }
@@ -1641,18 +1609,15 @@
           return;
         }
 
-        // センサーの「最新の数値」だけを変数に保存しておく（ここで画面は書き換えない！）
         currentHeading = h;
         currentPitch = p;
 
-        // もし「次回の画面更新の予約」がまだ入っていなければ、予約を入れる
         if (!planetariumAfc) {
           planetariumAfc = requestAnimationFrame(updatePlanetariumDOM);
         }
       }
 
       function updatePlanetariumDOM() {
-        // 予約をリセットする（次回のセンサー反応時にまた予約できるようにする）
         planetariumAfc = null;
 
         if (currentHeading === null || currentPitch === null) return;
@@ -1661,7 +1626,6 @@
         const pxPerDeg = window.innerWidth / fov;
         const skyElements = document.getElementById('planetarium-sky').children;
 
-        // DOMの効率的な書き換え処理
         for (let i = 0; i < skyElements.length; i++) {
           const el = skyElements[i];
           const sHeading = Number(el.dataset.heading);
@@ -1676,18 +1640,14 @@
           let diffP = currentPitch - sPitch;
           const dy = diffP * pxPerDeg;
 
-          // 最も軽い translate3d で位置を更新
           el.style.transform = `translate3d(calc(-50% + ${dx}px), calc(-50% + ${dy}px), 0)`;
 
-          // opacity計算
           const dist = Math.sqrt(dx * dx + dy * dy);
           const maxDist = window.innerWidth * 0.7;
           let newOpacity = Math.max(0, 1 - (dist / maxDist));
 
-          // なめらかにしつつ微小なノイズ計算を捨てるため、小数点第2位に丸める
           newOpacity = Math.round(newOpacity * 100) / 100;
 
-          // 実際の表示が変わるときだけCSSを更新する（ブラウザの計算を極限まで減らす超重要ポイント）
           if (el._lastOpacity !== newOpacity) {
             el.style.opacity = newOpacity;
             el._lastOpacity = newOpacity;
@@ -1699,7 +1659,6 @@
         const input = document.getElementById('secret-pass-input').value.trim();
         if (!input) return;
 
-        // スキャン・センサーを停止し、ローディング画面へ
         planetariumActive = false;
         window.removeEventListener('deviceorientation', handlePlanetarium);
         window.removeEventListener('deviceorientationabsolute', handlePlanetarium);
@@ -1710,7 +1669,6 @@
         document.getElementById('bourbon-loading').classList.remove('hidden');
 
         try {
-          // サーバー（GAS）にパスワードを送信して答え合わせ
           const response = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify({ action: 'checkPassword', password: input })
@@ -1719,12 +1677,10 @@
           document.getElementById('bourbon-loading').classList.add('hidden');
 
           if (result.status === 'success') {
-            // パスワード正解時：サーバーから送られてきたご褒美画面のHTMLを注入
             document.getElementById('bourbon-content').innerHTML = result.html;
             document.getElementById('bourbon-content').classList.remove('hidden');
           } else {
-            // パスワード間違い：元の星空に戻す
-            alert("エラー: 合言葉が一致しません。もう一度星空を探してみてください！");
+            alert("エラー: 合言葉が一致しません。ちゃんと星を探してくださいね");
             document.getElementById('bourbon-modal').classList.add('hidden');
             document.getElementById('planetarium-modal').classList.remove('hidden');
             planetariumActive = true;
