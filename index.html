@@ -1276,50 +1276,77 @@
         const btn = document.getElementById('download-btn');
         const area = document.getElementById('capture-area');
         const originalText = btn.innerHTML;
+        const PIXEL_RATIO = 3;
 
         btn.innerText = "画像生成中...";
         btn.disabled = true;
 
-        // Material Symbols含むの読み込み完了を待つ
+        // フォント読み込み完了を待つ
         await document.fonts.ready;
 
-        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
-        const logoImg = area.querySelector('img');
-        if (logoImg) {
-          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
-          if (b64 && !logoImg.src.startsWith('data:')) {
-            await new Promise((resolve) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = resolve;
-              logoImg.src = b64;
-            });
-          }
-        }
+        // ① ロゴdivを一時的に非表示（html-to-imageに描かせない）
+        const logoDiv = area.querySelector('.bg-no-repeat.bg-center.bg-contain');
+        if (logoDiv) logoDiv.style.visibility = 'hidden';
 
-        // 念のため「500ミリ秒」待機する。おまじない
+        // レンダリング反映のため少し待つ
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // スクロールして隠れている部分を含めた「本当の高さ」を取得
         const targetHeight = area.scrollHeight;
 
         try {
+          // ② ロゴなしで画像生成
           const dataUrl = await htmlToImage.toPng(area, {
             quality: 1.0,
-            pixelRatio: 3,
-            cacheBust: false, 
-            height: targetHeight, 
+            pixelRatio: PIXEL_RATIO,
+            cacheBust: false,
+            height: targetHeight,
             style: {
               overflow: 'visible',
-              maxHeight: 'none',  
+              maxHeight: 'none',
               height: targetHeight + 'px',
               borderRadius: '2.5rem'
             }
           });
+
+          // ロゴを元に戻す
+          if (logoDiv) logoDiv.style.visibility = '';
+
+          // ③ CanvasにhtmlToImage結果を描画
+          const baseImg = new Image();
+          baseImg.src = dataUrl;
+          await new Promise(resolve => { baseImg.onload = resolve; baseImg.onerror = resolve; });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = baseImg.width;
+          canvas.height = baseImg.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(baseImg, 0, 0);
+
+          // ④ ロゴをCanvasに直接描画（Base64キャッシュ使用）
+          const b64 = cachedLogoBase64;
+          if (b64 && logoDiv) {
+            const areaRect = area.getBoundingClientRect();
+            const logoRect = logoDiv.getBoundingClientRect();
+            const logoX = (logoRect.left - areaRect.left) * PIXEL_RATIO;
+            const logoY = (logoRect.top  - areaRect.top)  * PIXEL_RATIO;
+            const logoW = logoDiv.offsetWidth  * PIXEL_RATIO;
+            const logoH = logoDiv.offsetHeight * PIXEL_RATIO;
+
+            const logoImg = new Image();
+            logoImg.src = b64;
+            await new Promise(resolve => { logoImg.onload = resolve; logoImg.onerror = resolve; });
+            ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+          }
+
+          // ⑤ ダウンロード
+          const finalDataUrl = canvas.toDataURL('image/png', 1.0);
           const link = document.createElement('a');
           link.download = `my-hashigo-pass-${config.date}.png`;
-          link.href = dataUrl;
+          link.href = finalDataUrl;
           link.click();
+
         } catch (error) {
+          if (logoDiv) logoDiv.style.visibility = '';
           console.error('画像生成エラー:', error);
           alert("保存に失敗しました。");
         } finally {
@@ -1333,42 +1360,70 @@
         const btn = document.getElementById('share-btn');
         const area = document.getElementById('capture-area');
         const originalText = btn.innerHTML;
+        const PIXEL_RATIO = 3;
 
         btn.innerHTML = `<span>⏳ 準備中...</span>`;
         btn.disabled = true;
 
-        // Material Symbols含むの読み込み完了を待つ
+        // フォント読み込み完了を待つ
         await document.fonts.ready;
 
-        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
-        const logoImg = area.querySelector('img');
-        if (logoImg) {
-          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
-          if (b64 && !logoImg.src.startsWith('data:')) {
-            await new Promise((resolve) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = resolve;
-              logoImg.src = b64;
-            });
-          }
-        }
+        // ① ロゴdivを一時的に非表示（html-to-imageに描かせない）
+        const logoDiv = area.querySelector('.bg-no-repeat.bg-center.bg-contain');
+        if (logoDiv) logoDiv.style.visibility = 'hidden';
 
-        // スクロールして隠れている部分を含めた「本当の高さ」を取得
+        // レンダリング反映のため少し待つ
+        await new Promise(resolve => setTimeout(resolve, 300));
+
         const targetHeight = area.scrollHeight;
 
         try {
-          const blob = await htmlToImage.toBlob(area, {
+          // ② ロゴなしで画像生成
+          const dataUrl = await htmlToImage.toPng(area, {
             quality: 1.0,
-            pixelRatio: 3,
-            height: targetHeight, // キャンバス自体を本当の高さまで広げる
+            pixelRatio: PIXEL_RATIO,
+            cacheBust: false,
+            height: targetHeight,
             style: {
               overflow: 'visible',
-              maxHeight: 'none',  // 画面上の高さ制限を無視させる
+              maxHeight: 'none',
               height: targetHeight + 'px',
               borderRadius: '2.5rem'
             }
           });
 
+          // ロゴを元に戻す
+          if (logoDiv) logoDiv.style.visibility = '';
+
+          // ③ CanvasにhtmlToImage結果を描画
+          const baseImg = new Image();
+          baseImg.src = dataUrl;
+          await new Promise(resolve => { baseImg.onload = resolve; baseImg.onerror = resolve; });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = baseImg.width;
+          canvas.height = baseImg.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(baseImg, 0, 0);
+
+          // ④ ロゴをCanvasに直接描画（Base64キャッシュ使用）
+          const b64 = cachedLogoBase64;
+          if (b64 && logoDiv) {
+            const areaRect = area.getBoundingClientRect();
+            const logoRect = logoDiv.getBoundingClientRect();
+            const logoX = (logoRect.left - areaRect.left) * PIXEL_RATIO;
+            const logoY = (logoRect.top  - areaRect.top)  * PIXEL_RATIO;
+            const logoW = logoDiv.offsetWidth  * PIXEL_RATIO;
+            const logoH = logoDiv.offsetHeight * PIXEL_RATIO;
+
+            const logoImg = new Image();
+            logoImg.src = b64;
+            await new Promise(resolve => { logoImg.onload = resolve; logoImg.onerror = resolve; });
+            ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+          }
+
+          // ⑤ Blobに変換してシェア
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
           const file = new File([blob], `hashigo-pass-${config.date}.png`, { type: 'image/png' });
           const shareText = '名古屋 謎の縁のマイハシゴテーブルを作成したよ！\n#名古屋謎の縁 \nhttps://nagoya-nazonoen.github.io/NAZOTOKI-FES-TIME-TABLE/';
 
@@ -1389,6 +1444,7 @@
             }
           }
         } catch (error) {
+          if (logoDiv) logoDiv.style.visibility = '';
           console.error('シェア処理エラー:', error);
           alert("画像の生成に失敗しました。");
         } finally {
