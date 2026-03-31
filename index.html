@@ -705,11 +705,36 @@
       let selectedIds = [];
       let heatmapData = {};
       let heatmapDebounceTimer = null;
+      let cachedLogoBase64 = null; // ページ起動時にロゴをBase64化して保存
 
       const HEADER_OFFSET = 240;
       const PIXELS_PER_HOUR = 70;
 
+      // ページ起動直後にロゴをBase64化して保存（iOS Safari対策の根本解決）
+      async function preloadLogoAsBase64(src) {
+        try {
+          const resp = await fetch(src);
+          const blob = await resp.blob();
+          return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+        } catch(e) {
+          console.warn('Logo preload failed:', e);
+          return null;
+        }
+      }
+
       document.addEventListener('DOMContentLoaded', async () => {
+        // ロゴのBase64を先行取得（ボタン押下時に使うため）
+        const logoEl = document.querySelector('#capture-area img');
+        if (logoEl) {
+          preloadLogoAsBase64(logoEl.src).then(b64 => {
+            if (b64) cachedLogoBase64 = b64;
+          });
+        }
+
         try {
           const response = await fetch(API_URL);
           if (!response.ok) throw new Error('ネットワークエラーが発生しました。');
@@ -1258,18 +1283,17 @@
         // Material Symbols含むの読み込み完了を待つ
         await document.fonts.ready;
 
-        // iOS Safari画像非表示バグ対策：画像を強制的にBase64可してCanvasエラーを回避
+        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
         const logoImg = area.querySelector('img');
-        if (logoImg && !logoImg.src.startsWith('data:')) {
-          try {
-            const resp = await fetch(logoImg.src);
-            const blob = await resp.blob();
-            logoImg.src = await new Promise((res) => {
-              const reader = new FileReader();
-              reader.onloadend = () => res(reader.result);
-              reader.readAsDataURL(blob);
+        if (logoImg) {
+          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
+          if (b64 && !logoImg.src.startsWith('data:')) {
+            await new Promise((resolve) => {
+              logoImg.onload = resolve;
+              logoImg.onerror = resolve;
+              logoImg.src = b64;
             });
-          } catch(e) { console.warn('Logo prefetch failed', e); }
+          }
         }
 
         // 念のため「500ミリ秒」待機する。おまじない
@@ -1316,18 +1340,17 @@
         // Material Symbols含むの読み込み完了を待つ
         await document.fonts.ready;
 
-        // iOS Safari画像非表示バグ対策：画像を強制的にBase64可してCanvasエラーを回避
+        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
         const logoImg = area.querySelector('img');
-        if (logoImg && !logoImg.src.startsWith('data:')) {
-          try {
-            const resp = await fetch(logoImg.src);
-            const fetchedBlob = await resp.blob();
-            logoImg.src = await new Promise((res) => {
-              const reader = new FileReader();
-              reader.onloadend = () => res(reader.result);
-              reader.readAsDataURL(fetchedBlob);
+        if (logoImg) {
+          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
+          if (b64 && !logoImg.src.startsWith('data:')) {
+            await new Promise((resolve) => {
+              logoImg.onload = resolve;
+              logoImg.onerror = resolve;
+              logoImg.src = b64;
             });
-          } catch(e) { console.warn('Logo prefetch failed', e); }
+          }
         }
 
         // スクロールして隠れている部分を含めた「本当の高さ」を取得
