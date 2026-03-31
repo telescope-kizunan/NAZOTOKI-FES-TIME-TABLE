@@ -1258,6 +1258,20 @@
         // Material Symbols含むの読み込み完了を待つ
         await document.fonts.ready;
 
+        // iOS Safari画像非表示バグ対策：画像を強制的にBase64可してCanvasエラーを回避
+        const logoImg = area.querySelector('img');
+        if (logoImg && !logoImg.src.startsWith('data:')) {
+          try {
+            const resp = await fetch(logoImg.src);
+            const blob = await resp.blob();
+            logoImg.src = await new Promise((res) => {
+              const reader = new FileReader();
+              reader.onloadend = () => res(reader.result);
+              reader.readAsDataURL(blob);
+            });
+          } catch(e) { console.warn('Logo prefetch failed', e); }
+        }
+
         // 念のため「500ミリ秒」待機する。おまじない
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -1298,6 +1312,23 @@
 
         btn.innerHTML = `<span>⏳ 準備中...</span>`;
         btn.disabled = true;
+
+        // Material Symbols含むの読み込み完了を待つ
+        await document.fonts.ready;
+
+        // iOS Safari画像非表示バグ対策：画像を強制的にBase64可してCanvasエラーを回避
+        const logoImg = area.querySelector('img');
+        if (logoImg && !logoImg.src.startsWith('data:')) {
+          try {
+            const resp = await fetch(logoImg.src);
+            const fetchedBlob = await resp.blob();
+            logoImg.src = await new Promise((res) => {
+              const reader = new FileReader();
+              reader.onloadend = () => res(reader.result);
+              reader.readAsDataURL(fetchedBlob);
+            });
+          } catch(e) { console.warn('Logo prefetch failed', e); }
+        }
 
         // スクロールして隠れている部分を含めた「本当の高さ」を取得
         const targetHeight = area.scrollHeight;
