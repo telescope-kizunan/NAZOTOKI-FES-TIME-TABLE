@@ -656,7 +656,7 @@
 
           <div class="border-b-2 border-dashed border-[#c9a044] pb-5 mb-6 relative z-10 text-center">
             <div id="modal-fes-title" class="hidden">---</div>
-            <img src="./%E8%AC%8E%E3%81%AE%E7%B8%81_%E3%83%AD%E3%82%B4.png" alt="名古屋謎の縁" class="w-48 md:w-56 h-auto mx-auto mb-2 object-contain">
+            <img src="./謎の縁_ロゴ.png" alt="名古屋謎の縁" class="w-48 md:w-56 h-auto mx-auto mb-2 object-contain">
             <div id="modal-fes-date" class="text-[10px] font-bold text-[#c9a044] tracking-[0.3em] block uppercase">---
             </div>
           </div>
@@ -705,36 +705,11 @@
       let selectedIds = [];
       let heatmapData = {};
       let heatmapDebounceTimer = null;
-      let cachedLogoBase64 = null; // ページ起動時にロゴをBase64化して保存
 
       const HEADER_OFFSET = 240;
       const PIXELS_PER_HOUR = 70;
 
-      // ページ起動直後にロゴをBase64化して保存（iOS Safari対策の根本解決）
-      async function preloadLogoAsBase64(src) {
-        try {
-          const resp = await fetch(src);
-          const blob = await resp.blob();
-          return await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-          });
-        } catch(e) {
-          console.warn('Logo preload failed:', e);
-          return null;
-        }
-      }
-
       document.addEventListener('DOMContentLoaded', async () => {
-        // ロゴのBase64を先行取得（ボタン押下時に使うため）
-        const logoEl = document.querySelector('#capture-area img');
-        if (logoEl) {
-          preloadLogoAsBase64(logoEl.src).then(b64 => {
-            if (b64) cachedLogoBase64 = b64;
-          });
-        }
-
         try {
           const response = await fetch(API_URL);
           if (!response.ok) throw new Error('ネットワークエラーが発生しました。');
@@ -1283,19 +1258,6 @@
         // Material Symbols含むの読み込み完了を待つ
         await document.fonts.ready;
 
-        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
-        const logoImg = area.querySelector('img');
-        if (logoImg) {
-          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
-          if (b64 && !logoImg.src.startsWith('data:')) {
-            await new Promise((resolve) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = resolve;
-              logoImg.src = b64;
-            });
-          }
-        }
-
         // 念のため「500ミリ秒」待機する。おまじない
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -1336,22 +1298,6 @@
 
         btn.innerHTML = `<span>⏳ 準備中...</span>`;
         btn.disabled = true;
-
-        // Material Symbols含むの読み込み完了を待つ
-        await document.fonts.ready;
-
-        // iOS Safari対策：起動時に保存したBase64をimgに適用し、onloadで完了を待つ
-        const logoImg = area.querySelector('img');
-        if (logoImg) {
-          const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
-          if (b64 && !logoImg.src.startsWith('data:')) {
-            await new Promise((resolve) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = resolve;
-              logoImg.src = b64;
-            });
-          }
-        }
 
         // スクロールして隠れている部分を含めた「本当の高さ」を取得
         const targetHeight = area.scrollHeight;
