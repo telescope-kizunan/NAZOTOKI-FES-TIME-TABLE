@@ -709,6 +709,23 @@
       const HEADER_OFFSET = 240;
       const PIXELS_PER_HOUR = 70;
 
+      let cachedLogoBase64 = null;
+
+      async function preloadLogoAsBase64(src) {
+        try {
+          const resp = await fetch(src);
+          const blob = await resp.blob();
+          return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+        } catch(e) {
+          console.warn('Logo preload failed:', e);
+          return null;
+        }
+      }
+      
       document.addEventListener('DOMContentLoaded', async () => {
         try {
           const response = await fetch(API_URL);
