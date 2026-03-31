@@ -1246,7 +1246,7 @@
       }
 
       function closeModal() { document.getElementById('my-schedule-modal').classList.add('hidden'); }
-      // --- 画像保存処理 ---
+// --- 画像保存処理 ---
       async function downloadScheduleImage() {
         const btn = document.getElementById('download-btn');
         const area = document.getElementById('capture-area');
@@ -1257,30 +1257,86 @@
 
         // Material Symbols含むの読み込み完了を待つ
         await document.fonts.ready;
-
         // 念のため「500ミリ秒」待機する。おまじない
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // スクロールして隠れている部分を含めた「本当の高さ」を取得
         const targetHeight = area.scrollHeight;
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const logoImg = area.querySelector('img');
 
         try {
-          const dataUrl = await htmlToImage.toPng(area, {
-            quality: 1.0,
-            pixelRatio: 3,
-            cacheBust: true, 
-            height: targetHeight, 
-            style: {
-              overflow: 'visible',
-              maxHeight: 'none',  
-              height: targetHeight + 'px',
-              borderRadius: '2.5rem'
+          if (isIOS && logoImg) {
+            // ★iOS専用：Canvas後合成処理
+            const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
+            
+            // レイアウトを崩さずにロゴを透明化（空間を維持）
+            const originalOpacity = logoImg.style.opacity;
+            logoImg.style.opacity = '0';
+
+            const canvas = await htmlToImage.toCanvas(area, {
+              quality: 1.0,
+              pixelRatio: 3,
+              cacheBust: true, 
+              height: targetHeight, 
+              style: {
+                overflow: 'visible',
+                maxHeight: 'none',  
+                height: targetHeight + 'px',
+                borderRadius: '2.5rem'
+              }
+            });
+
+            // ロゴを元に戻す
+            logoImg.style.opacity = originalOpacity;
+
+            if (b64) {
+              const imgObj = new Image();
+              await new Promise((resolve, reject) => {
+                imgObj.onload = resolve;
+                imgObj.onerror = reject;
+                imgObj.src = b64;
+              });
+
+              const ctx = canvas.getContext('2d');
+              const ratio = 3;
+              const areaRect = area.getBoundingClientRect();
+              const logoRect = logoImg.getBoundingClientRect();
+              
+              // 描画座標の動的計算（レスポンシブ・スクロール分を完全考慮）
+              const drawX = (logoRect.left - areaRect.left + area.scrollLeft) * ratio;
+              const drawY = (logoRect.top - areaRect.top + area.scrollTop) * ratio;
+              const drawW = logoRect.width * ratio;
+              const drawH = logoRect.height * ratio;
+
+              ctx.drawImage(imgObj, drawX, drawY, drawW, drawH);
             }
-          });
-          const link = document.createElement('a');
-          link.download = `my-hashigo-pass-${config.date}.png`;
-          link.href = dataUrl;
-          link.click();
+
+            const dataUrl = canvas.toDataURL('image/png', 1.0);
+            const link = document.createElement('a');
+            link.download = `my-hashigo-pass-${config.date}.png`;
+            link.href = dataUrl;
+            link.click();
+
+          } else {
+            // ★PC/Android またはロゴ無しの場合の通常処理
+            const dataUrl = await htmlToImage.toPng(area, {
+              quality: 1.0,
+              pixelRatio: 3,
+              cacheBust: true, 
+              height: targetHeight, 
+              style: {
+                overflow: 'visible',
+                maxHeight: 'none',  
+                height: targetHeight + 'px',
+                borderRadius: '2.5rem'
+              }
+            });
+            const link = document.createElement('a');
+            link.download = `my-hashigo-pass-${config.date}.png`;
+            link.href = dataUrl;
+            link.click();
+          }
         } catch (error) {
           console.error('画像生成エラー:', error);
           alert("保存に失敗しました。");
@@ -1299,21 +1355,72 @@
         btn.innerHTML = `<span>⏳ 準備中...</span>`;
         btn.disabled = true;
 
-        // スクロールして隠れている部分を含めた「本当の高さ」を取得
+        await document.fonts.ready;
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         const targetHeight = area.scrollHeight;
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const logoImg = area.querySelector('img');
 
         try {
-          const blob = await htmlToImage.toBlob(area, {
-            quality: 1.0,
-            pixelRatio: 3,
-            height: targetHeight, // キャンバス自体を本当の高さまで広げる
-            style: {
-              overflow: 'visible',
-              maxHeight: 'none',  // 画面上の高さ制限を無視させる
-              height: targetHeight + 'px',
-              borderRadius: '2.5rem'
+          let blob;
+          
+          if (isIOS && logoImg) {
+            // ★iOS専用：Canvas後合成処理
+            const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
+            const originalOpacity = logoImg.style.opacity;
+            logoImg.style.opacity = '0';
+
+            const canvas = await htmlToImage.toCanvas(area, {
+              quality: 1.0,
+              pixelRatio: 3,
+              height: targetHeight,
+              style: {
+                overflow: 'visible',
+                maxHeight: 'none',
+                height: targetHeight + 'px',
+                borderRadius: '2.5rem'
+              }
+            });
+
+            logoImg.style.opacity = originalOpacity;
+
+            if (b64) {
+              const imgObj = new Image();
+              await new Promise((resolve, reject) => {
+                imgObj.onload = resolve;
+                imgObj.onerror = reject;
+                imgObj.src = b64;
+              });
+
+              const ctx = canvas.getContext('2d');
+              const ratio = 3;
+              const areaRect = area.getBoundingClientRect();
+              const logoRect = logoImg.getBoundingClientRect();
+              
+              const drawX = (logoRect.left - areaRect.left + area.scrollLeft) * ratio;
+              const drawY = (logoRect.top - areaRect.top + area.scrollTop) * ratio;
+              const drawW = logoRect.width * ratio;
+              const drawH = logoRect.height * ratio;
+
+              ctx.drawImage(imgObj, drawX, drawY, drawW, drawH);
             }
-          });
+            blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+
+          } else {
+            // ★PC/Android またはロゴ無しの場合の通常処理
+            blob = await htmlToImage.toBlob(area, {
+              quality: 1.0,
+              pixelRatio: 3,
+              height: targetHeight,
+              style: {
+                overflow: 'visible',
+                maxHeight: 'none',
+                height: targetHeight + 'px',
+                borderRadius: '2.5rem'
+              }
+            });
+          }
 
           const file = new File([blob], `hashigo-pass-${config.date}.png`, { type: 'image/png' });
           const shareText = '名古屋 謎の縁のマイハシゴテーブルを作成したよ！\n#名古屋謎の縁 \nhttps://nagoya-nazonoen.github.io/NAZOTOKI-FES-TIME-TABLE/';
