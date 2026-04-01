@@ -353,21 +353,14 @@
       position: absolute;
 
       /* エフェクトの調整 */
-      /* bottom の数値を大きくすると上へ、left を大きくすると右へ移動します */
       bottom: calc(50% + 40px);
       left: calc(50% + 50px);
 
       transform-origin: bottom center;
 
-      /* 角度の調整 */
-      /* 65deg を小さくすると上向きに、大きくすると右向き */
       transform: rotate(65deg);
-
-      /* 太さと長さの調整 */
       width: 100px;
-      /* 先端の広がり幅 */
       margin-left: -50px;
-      /* 【重要】常に width の半分のマイナス値に */
       height: 150px;
 
 
@@ -376,8 +369,6 @@
         repeating-linear-gradient(to top, transparent, transparent 3px, rgba(243, 227, 124, 0.1) 4px, rgba(243, 227, 124, 0.15) 5px);
       background-size: 100% 100%, 100% 20px;
 
-      /*広がり方（角度）の調整 */
-      /* 25% と 75% の数字をいじると広がりの角度が変化 */
       clip-path: polygon(25% 0, 75% 0, 51% 100%, 49% 100%);
 
 
@@ -502,7 +493,6 @@
     <footer id="dev-footer"
       class="mt-40 mb-10 text-center border-t border-slate-200/60 pt-10 text-slate-400 select-none cursor-pointer">
       <div id="footer-flip-inner" class="footer-flip-inner">
-        <!-- フリップ表 -->
         <div class="footer-front">
           <p class="text-[10px] font-black tracking-[0.3em] uppercase mb-2">Developed by</p>
           <p class="text-sm font-[900] text-[#123b53] tracking-tighter uppercase transition-all duration-1000"
@@ -510,7 +500,6 @@
           <p class="text-sm font-[900] text-[#123b53] tracking-tighter uppercase transition-all duration-1000"
             id="footer-logo">名古屋 謎の縁　実行委員会</p>
         </div>
-        <!-- 裏 -->
         <div class="footer-back">
           <img id="telescope-icon" src="./望遠鏡.png" alt="テレスコープ"
             class="w-[110px] h-auto drop-shadow-[0_0_15px_#f3e37c] relative z-20">
@@ -580,7 +569,6 @@
       </div>
     </div>
 
-    <!-- プラネタリウム -->
     <div id="planetarium-modal"
       class="fixed inset-0 z-[120] hidden bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white overflow-hidden font-serif">
       <div class="absolute inset-0 pointer-events-none opacity-80"
@@ -615,7 +603,6 @@
       <button onclick="document.getElementById('planetarium-modal').classList.add('hidden')"
         class="absolute top-4 right-4 text-white/50 hover:text-[#f3e37c] p-4 text-3xl font-light z-20 transition-colors">&times;</button>
 
-      <!-- パスワード入力処理 -->
       <div id="password-prompt"
         class="absolute bottom-10 left-4 right-4 max-w-sm mx-auto hidden flex-col items-center z-30 p-4 bg-[#1a1c29]/60 backdrop-blur-md border border-[#f3e37c]/30 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)]">
         <div class="flex items-center gap-2 w-full">
@@ -696,7 +683,7 @@
 
 
     <script>
-      // ▼▼▼ 注意：API URL はGASで「新しいデプロイ」をした際の発行URLに書き換えて ▼▼▼
+      // ▼▼▼ 注意：API URL ▼▼▼
       const API_URL = 'https://script.google.com/macros/s/AKfycbwlnWMqXi5wIN-G649TPz3QgPDvGFD_xxP-7sYbc1F-3Q5hSXVBThfpu1Ag_zFVUKzD/exec';
       // ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲ ▲▲▲
 
@@ -746,7 +733,6 @@
         const parts = timeStr.split(':');
         return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
       }
-      // 公演カードLOCK後予約ページ遷移
       function unlockReserve(correctPassword, url) {
         const input = prompt("【LOCKED】\nパスワードを入力してください");
         if (input === null) return;
@@ -778,7 +764,6 @@
         });
         syncScrollbars();
 
-        // スイッチでタイテの幅が変わった直後に、上のスクロールバーの長さを再計算して同期させる
         const container = document.getElementById('table-container');
         const topScrollContent = document.getElementById('top-scrollbar-content');
         if (container && topScrollContent) {
@@ -869,7 +854,7 @@
           { text: "text-pink-800", bg: "bg-pink-100", border: "border-pink-200", accent: "text-pink-500", phaseBg: "bg-pink-300", phaseText: "text-pink-900" }
         ];
 
-        // iPhone(iOS)かどうかを判定し、専用の文字サイズを設定（ループ外で1回だけ計算）
+        // iPhone(iOS)かどうかを判定
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const titleSizeClass = isIOS ? "text-[11px]" : "text-[13px]";
         const infoSizeClass = isIOS ? "text-[8.5px]" : "text-[9.5px]";
@@ -892,7 +877,6 @@
             imageUrl = imageUrl.replace("uc?export=view&id=", "thumbnail?id=") + "&sz=w1000";
           }
 
-          // ヘッダーのノイズは1行目基準、パスワードは「どれか1枠」にあれば全体に適用
           const isHeaderNoise = base["ノイズ演出"] === true || base["ノイズ演出"] === "TRUE" || base["ノイズ演出"] === "あり";
           const lockShow = groupShows.find(s => (s["南京錠パスワード"] || "") !== "");
           const lockPassword = lockShow ? lockShow["南京錠パスワード"] : "";
@@ -928,7 +912,6 @@
             }
           }
 
-          // ヘッダータイトルの不思議演出
           let titleHtml = `<h3 class="font-[900] ${titleSizeClass} leading-[1.3] text-[#123b53] break-words whitespace-pre-wrap">${title}</h3>`;
           if (isHeaderNoise) {
             titleHtml = `<h3 class="font-[900] ${titleSizeClass} leading-[1.3] mystic-text break-words whitespace-pre-wrap select-none">${title}</h3>`;
@@ -1006,7 +989,6 @@
             const showDuration = show["所要時間(分)"] || show.duration || 0;
             let endT_min = (h * 60) + m + Number(showDuration);
 
-            // 当日受付の場合、所要時間が未入力ならデフォルトで1日の終わりまで伸ばす
             if (isFamilyStyle && showDuration == 0) {
               endT_min = (config.endHour + 1) * 60;
             }
@@ -1039,7 +1021,6 @@
                        <span class="text-[10px] font-black ${c.phaseText} leading-tight text-center drop-shadow-sm">${phaseName}</span>
                      </div>
                    `;
-                  // 追加ブロック分だけパディングを足して中央揃えのテキストが下にズレないようにする
                   cardStyle += `padding-bottom: ${phaseHeight + 16}px; `;
                 }
               }
@@ -1068,11 +1049,9 @@
               cardStyle += ` background-color: hsla(${hue}, 90%, 60%, ${heatAlpha}) !important; border-color: hsla(${hue}, 90%, 50%, ${heatAlpha}) !important;`;
             }
 
-            // カードごとに個別の判定でノイズとタップ不可を適用
             const cardNoiseClass = isCardNoise ? "!bg-slate-50/80 backdrop-blur-sm !border-slate-200 pointer-events-none" : `${c.bg} ${c.border}`;
             const textNoiseClass = isCardNoise ? "mystic-text" : c.text.replace('800', '700');
 
-            // ロック枠（かつノイズが晴れている）なら南京錠アイコンを表示
             const cardLockBadge = (isCardLock && !isCardNoise) ? `<div class="absolute -top-2 -left-2 bg-slate-800 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md z-20"><span class="material-symbols-outlined text-[12px] text-[#c9a044]">lock</span></div>` : "";
 
             colHtml += `
@@ -1128,7 +1107,7 @@
 
       function updateUI() {
         let hasConflict = false;
-        const showsMap = new Map(allShows.map(s => [s.id, s])); // O(1)検索用マップ
+        const showsMap = new Map(allShows.map(s => [s.id, s])); 
 
         // 選択された公演の被り（重複）チェック
         selectedIds.forEach((id1, i) => {
@@ -1153,7 +1132,6 @@
           });
         });
         document.getElementById('conflict-warning').classList.toggle('hidden', !hasConflict);
-        // 選択数に応じて下部バーを表示/非表示
         const bar = document.getElementById('selection-bar');
         bar.classList.toggle('translate-y-64', selectedIds.length === 0);
         bar.classList.toggle('translate-y-0', selectedIds.length > 0);
@@ -1281,7 +1259,7 @@
 
         try {
           if (isIOS && logoImg) {
-            // ★iOS専用：Canvas後合成処理
+            // iOS専用：Canvas後合成処理
             const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
             const originalOpacity = logoImg.style.opacity;
             logoImg.style.opacity = '0';
@@ -1303,7 +1281,6 @@
 
             if (b64) {
               const imgObj = new Image();
-              // ★変更1: エラー時も強制終了(reject)させず、安全にスキップする
               const loaded = await new Promise((resolve) => {
                 imgObj.onload = () => resolve(true);
                 imgObj.onerror = () => {
@@ -1339,7 +1316,7 @@
             link.click();
 
           } else {
-            // ★PC/Android またはロゴ無しの場合の通常処理
+            // PC/Android の場合の通常処理
             const dataUrl = await htmlToImage.toPng(area, {
               quality: 1.0,
               pixelRatio: 3,
@@ -1386,7 +1363,7 @@
           let blob;
           
           if (isIOS && logoImg) {
-            // ★iOS専用：Canvas後合成処理
+            // iOS専用：Canvas後合成処理
             const b64 = cachedLogoBase64 || await preloadLogoAsBase64(logoImg.src);
             const originalOpacity = logoImg.style.opacity;
             logoImg.style.opacity = '0';
@@ -1430,13 +1407,12 @@
               }
             }
             
-            // ★変更2: iOS SafariのtoBlobバグを回避するため、toDataURL経由で確実なBlob生成
             const dataUrl = canvas.toDataURL('image/png', 1.0);
             if (!dataUrl || dataUrl === 'data:,') throw new Error("CanvasのデータURL生成に失敗しました");
             blob = await (await fetch(dataUrl)).blob();
 
           } else {
-            // ★PC/Android またはロゴ無しの場合の通常処理
+            // PC/Android の通常処理
             blob = await htmlToImage.toBlob(area, {
               quality: 1.0,
               pixelRatio: 3,
@@ -1473,7 +1449,6 @@
           }
         } catch (error) {
           console.error('シェア処理エラー:', error);
-          // エラー詳細を表示して原因を切り分けやすくする
           alert("画像の生成に失敗しました。詳細: " + error.message);
         } finally {
           btn.innerHTML = originalText;
@@ -1481,9 +1456,6 @@
         }
       }
 
-      // ============================================================
-      // --- egg---
-      // ============================================================
       let eggTimer = null;
       let eggTriggered = false;
 
@@ -1492,7 +1464,7 @@
         const startEgg = (e) => {
           return; //オフ設定(この行のONOFFで対応)
           if (eggTriggered) return;
-          e.preventDefault(); // スクロールリセット防止
+          e.preventDefault(); 
           document.getElementById('footer-logo').classList.add('text-[#c9a044]', 'scale-110');
           eggTimer = setTimeout(() => {
             activateEasterEgg();
@@ -1518,35 +1490,24 @@
         if (eggTriggered) return;
         eggTriggered = true;
 
-        // ■ 現在のスクロール位置を記憶（リセット防止）
         const savedScrollY = window.scrollY || window.pageYOffset;
         const container = document.getElementById('table-container');
         const savedScrollLeft = container ? container.scrollLeft : 0;
 
         if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
 
-        // ====================================================
-        // 夜空モードへ切り替え
-        // ====================================================
         document.body.classList.add('night-sky-mode');
         const flipEl = document.getElementById('footer-flip-inner');
         if (flipEl) flipEl.classList.add('is-flipped');
 
-        // スクロール位置の復元）
         requestAnimationFrame(() => {
           window.scrollTo(0, savedScrollY);
           if (container) container.scrollLeft = savedScrollLeft;
         });
 
-        // ====================================================
-        // Secret
-        // ====================================================
         setTimeout(() => {
-          // スクロール位置を再度復元
           window.scrollTo(0, savedScrollY);
           if (container) container.scrollLeft = savedScrollLeft;
-
-          // 時間軸の拡張
           const axis = document.getElementById('time-axis');
           const extStart = config.endHour + 1;
           const extEnd = 25;
@@ -1556,7 +1517,6 @@
           }
           axis.innerHTML += extendedHtml;
 
-          // 各列（venue-col）の高さを拡張
           const cols = document.querySelectorAll('.venue-col');
           const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
           const currentHeaderOffset = isIOS ? 255 : 240;
@@ -1574,7 +1534,6 @@
           secretCol.style.height = `${newHeight}px`;
           secretCol.dataset.reservation = '事前予約';
 
-          // Secretヘッダー
           const headerH = isIOS ? 'h-[245px]' : 'h-[230px]';
           let secretColHtml = `
             <div class="timetable-header sticky top-0 bg-white/95 backdrop-blur-md px-2 py-3 z-30 ${headerH} flex flex-col border-b border-slate-200 shadow-sm overflow-hidden text-left relative">
@@ -1634,7 +1593,6 @@
                 };
                 secretCol.appendChild(secretCard);
 
-                // カード出現アニメーション
                 requestAnimationFrame(() => {
                   requestAnimationFrame(() => {
                     secretCard.style.transition = 'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
@@ -1653,9 +1611,6 @@
         }, 1800); 
       }
 
-      // ============================================================
-      // --- プラネタリウム処理 ---
-      // ============================================================
       let planetariumActive = false;
       let planetariumTimer = null;
 
@@ -1663,15 +1618,14 @@
         const btn = document.getElementById('planetarium-start-btn');
         const status = document.getElementById('planetarium-status');
         const sky = document.getElementById('planetarium-sky');
-        // データ準備（スプレッドシートから取得）
         const starsData = window.easterEggData || [];
 
         sky.innerHTML = '';
 
         starsData.forEach((s, idx) => {
-          let pitchTarget = 90; // 中層（画面正面）
-          if (s["階層"] === "上層") pitchTarget = 120; // 見上げる
-          if (s["階層"] === "下層") pitchTarget = 60;  // 見下ろす
+          let pitchTarget = 90; 
+          if (s["階層"] === "上層") pitchTarget = 120; 
+          if (s["階層"] === "下層") pitchTarget = 60; 
 
           const isSecret = (s["パスワード"] && String(s["パスワード"]).trim() !== "");
 
@@ -1685,7 +1639,6 @@
           el.style.opacity = '0';
           el.style.transition = 'opacity 0.2s linear'; 
 
-          // 星座風エフェクト
           const filterStyle = "filter: brightness(0) invert(1) drop-shadow(0 0 15px #f3e37c) drop-shadow(0 0 5px #fff); opacity: 0.9; mix-blend-mode: screen; transform: translateZ(0);";
           const visual = s["画像URL"]
             ? `<img src="${s["画像URL"]}" class="w-16 h-16 md:w-20 md:h-20 object-contain mx-auto" style="${filterStyle}">`
