@@ -451,7 +451,7 @@
             class="filter-btn active-filter bg-[#123b53] text-white px-3 py-2.5 md:px-4 rounded-full text-[11px] font-black transition-all">すべて</button>
           <button onclick="filterShows('事前予約')" id="filter-btn-PRE"
             class="filter-btn text-slate-500 hover:bg-white/60 px-3 py-2.5 md:px-4 rounded-full text-[11px] font-black transition-all">事前予約</button>
-          <button onclick="filterShows('当日受付(ファミレス式)')" id="filter-btn-DAY"
+          <button onclick="filterShows('当日受付')" id="filter-btn-DAY"
             class="filter-btn text-slate-500 hover:bg-white/60 px-3 py-2.5 md:px-4 rounded-full text-[11px] font-black transition-all">当日受付</button>
         </div>
       </div>
@@ -891,6 +891,7 @@
           const reserveUrl = base["予約URL"] || base.url;
           const reservationType = base["予約形式"] || "事前予約";
           const isFamilyStyle = reservationType === "当日受付(ファミレス式)";
+          const isTicketSystem = reservationType === "当日受付(整理券配布)"; // 整理券配布方式
 
           // ヘッダー画像のぼやけ演出
           let visualHtml = "";
@@ -919,7 +920,7 @@
 
           // 予約ボタンロジック
           let buttonHtml = `<div class="h-8"></div>`;
-          if (isFamilyStyle) {
+          if (isFamilyStyle || isTicketSystem) {
             buttonHtml = `<div class="w-full bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-bold py-1.5 rounded flex items-center justify-center uppercase tracking-tighter cursor-default">当日現地受付</div>`;
           } else if (hasLock) {
             buttonHtml = `<button onclick="unlockReserve('${lockPassword}', '${reserveUrl}')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 text-[11px] font-bold py-1.5 rounded flex items-center justify-center gap-1.5 transition-all uppercase tracking-tighter active:scale-95 shadow-sm"><span class="material-symbols-outlined text-[14px] text-[#c9a044]">lock</span>LOCKED</button>`;
@@ -985,6 +986,7 @@
             let cardStyle = "";
             let timeDisplay = "";
             let phaseBlockHtml = "";
+            let topPhaseBlockHtml = ""; // 整理券配布用：カード上部フェーズ枠
 
             const showDuration = show["所要時間(分)"] || show.duration || 0;
             let endT_min = (h * 60) + m + Number(showDuration);
@@ -1030,8 +1032,37 @@
               endT_min = acceptEndMin;
             }
 
-            const height = Math.max(0, (endT_min - ((h * 60) + m)) * (PIXELS_PER_HOUR / 60) - 1);
-            cardStyle += `top:${top}px; height:${height}px;`;
+            // ============================================================
+            // 整理券配布システム: 開始側フェーズ処理
+            // ============================================================
+            let cardTopMin = (h * 60) + m; // カードtop計算の基点（デフォルト: 開始時間）
+            if (isTicketSystem) {
+              const ticketStartStr = show["整理券配布時間"] || "";
+              const ticketEndStr   = show["整理券配布終了時間"] || "";
+              const firstPhaseName = String(show["1stフェーズ表示名"] || "").replace(/\n/g, '<br>');
+              if (ticketStartStr.includes(":")) {
+                const [tsh, tsm] = ticketStartStr.split(":").map(Number);
+                const ticketStartMin = (tsh * 60) + tsm;
+                cardTopMin = ticketStartMin; // カードをtickertStartから開始
+                if (ticketEndStr.includes(":") && firstPhaseName !== "") {
+                  const [teh, tem] = ticketEndStr.split(":").map(Number);
+                  const ticketEndMin = (teh * 60) + tem;
+                  const topPhaseHeight = (ticketEndMin - ticketStartMin) * (PIXELS_PER_HOUR / 60);
+                  if (topPhaseHeight > 0) {
+                    topPhaseBlockHtml = `
+                      <div class="absolute top-0 left-0 right-0 flex items-center justify-center p-1 ${c.phaseBg} border-b border-dashed border-white/60" style="height:${topPhaseHeight}px;">
+                        <span class="text-[10px] font-black ${c.phaseText} leading-tight text-center drop-shadow-sm">${firstPhaseName}</span>
+                      </div>
+                    `;
+                    cardStyle += `padding-top: ${topPhaseHeight + 16}px; `;
+                  }
+                }
+              }
+            }
+
+            const cardTopPx = (cardTopMin - config.startHour * 60) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
+            const height = Math.max(0, (endT_min - cardTopMin) * (PIXELS_PER_HOUR / 60) - 1);
+            cardStyle += `top:${cardTopPx}px; height:${height}px;`;
 
             const calcEndStr = `${Math.floor(endT_min / 60)}:${('0' + (endT_min % 60)).slice(-2)}`;
             const endStr = isFamilyStyle ? calcEndStr : (show.endTime || show.end || calcEndStr);
@@ -1040,7 +1071,7 @@
             if (isFamilyStyle) {
               timeDisplay = `随時受付<br><span class="opacity-70 text-[9px]">(${validStartStr} - ${endStr})</span>`;
             } else {
-              timeDisplay = `${validStartStr} - ${endStr}`;
+              timeDisplay = `${validStartStr} - ${endStr}`; // 整理券配布も事前予約と同じ表示
             }
 
             if (currentShowCount > 0) {
@@ -1060,6 +1091,7 @@
                class="absolute left-2 right-2 p-4 transition-all duration-300 flex flex-col items-center justify-center timetable-card border border-slate-200 ${soldOutClass} hover:brightness-95 ${cardNoiseClass}">
             ${soldOutBadge}
             ${cardLockBadge}
+            ${topPhaseBlockHtml}
             <div class="font-black text-[11px] text-center leading-tight z-10 ${textNoiseClass}">${timeDisplay}</div>
             ${currentShowCount > 0 ? `<div class="absolute -top-2 -right-2 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse z-20 tooltip-trigger" title="${currentShowCount}人がハシゴ予定！"><span class="material-symbols-outlined text-[10px]">mode_heat</span></div>` : ''}
             ${phaseBlockHtml}
@@ -1114,13 +1146,13 @@
           const s1 = showsMap.get(id1);
           const card1 = document.getElementById(`card-${id1}`);
           if (card1) card1.classList.remove('conflict');
-          if (!s1 || (s1["予約形式"] || "") === "当日受付(ファミレス式)" || (s1["予約形式"] || "") === "事前予約(時間自由)") return;
+          if (!s1 || (s1["予約形式"] || "") === "当日受付(ファミレス式)" || (s1["予約形式"] || "") === "事前予約(時間自由)" || (s1["予約形式"] || "") === "当日受付(整理券配布)") return;
           const start1 = timeToMinutes(s1["開始時間(hh:mm)"] || s1.start);
           const end1 = timeToMinutes(s1.endTime || s1.end);
           selectedIds.forEach((id2, j) => {
             if (i >= j) return;
             const s2 = showsMap.get(id2);
-            if (!s2 || (s2["予約形式"] || "") === "当日受付(ファミレス式)" || (s2["予約形式"] || "") === "事前予約(時間自由)") return;
+            if (!s2 || (s2["予約形式"] || "") === "当日受付(ファミレス式)" || (s2["予約形式"] || "") === "事前予約(時間自由)" || (s2["予約形式"] || "") === "当日受付(整理券配布)") return;
             const start2 = timeToMinutes(s2["開始時間(hh:mm)"] || s2.start);
             const end2 = timeToMinutes(s2.endTime || s2.end);
             if ((start1 <= end2 && end1 >= start2) || (start2 <= end1 && end2 >= start1)) {
@@ -1206,7 +1238,7 @@
         for (let i = 0; i < sel.length - 1; i++) {
           const t1 = sel[i]["予約形式"] || "";
           const t2 = sel[i + 1]["予約形式"] || "";
-          if (t1 === "当日受付(ファミレス式)" || t1 === "事前予約(時間自由)" || t2 === "当日受付(ファミレス式)" || t2 === "事前予約(時間自由)") continue;
+          if (t1 === "当日受付(ファミレス式)" || t1 === "事前予約(時間自由)" || t1 === "当日受付(整理券配布)" || t2 === "当日受付(ファミレス式)" || t2 === "事前予約(時間自由)" || t2 === "当日受付(整理券配布)") continue;
           const end1 = timeToMinutes(sel[i].endTime || sel[i].end);
           const start2 = timeToMinutes(sel[i + 1]["開始時間(hh:mm)"] || sel[i + 1].start);
           if (end1 >= start2) overlap = true;
@@ -1219,8 +1251,10 @@
           const startStr = s["開始時間(hh:mm)"] || s.start;
           const endStr = s.endTime || s.end;
           const isFamily = (s["予約形式"] || "") === "当日受付(ファミレス式)";
-          const displayTime = isFamily ? "随時受付" : `<span class="material-symbols-outlined text-[13px] mr-0.5">timer</span>${startStr} - ${endStr}`;
-          const accentColorClass = isFamily ? 'bg-orange-500' : 'bg-[#c5304b]';
+          const isTicket = (s["予約形式"] || "") === "当日受付(整理券配布)";
+          const ticketLabel = s["1stフェーズ表示名"] || "整理券配布";
+          const displayTime = isFamily ? "随時受付" : isTicket ? ticketLabel : `<span class="material-symbols-outlined text-[13px] mr-0.5">timer</span>${startStr} - ${endStr}`;
+          const accentColorClass = isFamily ? 'bg-orange-500' : isTicket ? 'bg-amber-500' : 'bg-[#c5304b]';
           list.innerHTML += `
         <div class="hashigo-card bg-white p-3 rounded-lg shadow-sm border border-[#c9a044]/30 relative overflow-hidden text-left">
           <div class="absolute left-0 top-0 bottom-0 w-1.5 ${accentColorClass}"></div>
@@ -1462,7 +1496,7 @@
       const footerEl = document.getElementById('dev-footer');
       if (footerEl) {
         const startEgg = (e) => {
-         return; //オフ設定(この行のONOFFで対応)
+          return; //オフ設定(この行のONOFFで対応)
           if (eggTriggered) return;
           e.preventDefault(); 
           document.getElementById('footer-logo').classList.add('text-[#c9a044]', 'scale-110');
