@@ -1060,7 +1060,7 @@
               }
             }
 
-            const cardTopPx = ((cardTopMin / 60 - config.startHour) * 60 + (cardTopMin % 60)) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
+            const cardTopPx = (cardTopMin - config.startHour * 60) * (PIXELS_PER_HOUR / 60) + currentHeaderOffset;
             const height = Math.max(0, (endT_min - cardTopMin) * (PIXELS_PER_HOUR / 60) - 1);
             cardStyle += `top:${cardTopPx}px; height:${height}px;`;
 
