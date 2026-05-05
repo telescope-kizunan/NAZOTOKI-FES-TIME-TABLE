@@ -1496,7 +1496,7 @@
       const footerEl = document.getElementById('dev-footer');
       if (footerEl) {
         const startEgg = (e) => {
-          //return; //オフ設定(この行のONOFFで対応)
+          return; //オフ設定(この行のONOFFで対応)
           if (eggTriggered) return;
           e.preventDefault(); 
           document.getElementById('footer-logo').classList.add('text-[#c9a044]', 'scale-110');
